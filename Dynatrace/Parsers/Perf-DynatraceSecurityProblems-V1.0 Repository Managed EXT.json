@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DynatraceSecurityProblems')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DynatraceSecurityProblems",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DynatraceSecurityProblems",
+        "query": "DynatraceSecurityProblems_CL\n| extend EventVendor = 'Dynatrace'\n| extend EventProduct = 'Application Security'\n| extend Severity = case(riskAssessment_riskLevel_s == 'CRITICAL', 'High', \n                       riskAssessment_riskLevel_s == 'HIGH', 'Medium', \n                       riskAssessment_riskLevel_s == 'MEDIUM', 'Low',\n                       'Informational')\n| project-rename\n    SecurityProblemId = securityProblemId_s,\n    CVEIds = cveIds_s,\n    DisplayId = displayId_s,\n    ExternalVulnerabilityId = externalVulnerabilityId_s ,\n    FirstSeenTimeStamp = firstSeenTimestamp_d ,\n    LastUpdatedTimeStamp = lastUpdatedTimestamp_d,\n    Muted = muted_b,\n    PackageName = packageName_s,\n    DAVISRiskLevel = riskAssessment_riskLevel_s,\n    DAVISRiskScore = riskAssessment_riskScore_d,\n    DAVISRiskVector = riskAssessment_riskVector_s,\n    DAVISVulnerableFunctionUsage = riskAssessment_vulnerableFunctionUsage_s ,\n    DAVISExposure = riskAssessment_exposure_s,\n    DAVISDataAssets = riskAssessment_dataAssets_s,\n    DAVISPublicExploit = riskAssessment_publicExploit_s,\n    Status = status_s,\n    Technology = technology_s ,\n    Title = title_s ,\n    Url = url_s,\n    VulnerabilityType = vulnerabilityType_s,\n    ManagementZones = managementZones_s\n| project-away riskAssessment_baseRiskLevel_s, riskAssessment_baseRiskScore_d, \n    riskAssessment_baseRiskVector_s,riskAssessment_assessmentAccuracy_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

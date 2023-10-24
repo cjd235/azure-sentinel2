@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcpoption')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcpoption",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcpoption",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nlet RawData = Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has \"Option\"\n    | extend Parser = extract_all(@\"^(\\d{2}\\-[a-zA-Z]{3}\\-\\d{4}\\s[0-9\\.\\:]+)?\\s?([a-zA-Z-_]+)(\\s|\\:)?(.*)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n    | extend responseTime = todatetime(Parser[0]),\n             RawData_subString = tostring(Parser[3])\n    | project-away Parser;\nRawData\n    | extend dhcpoption = extract_all(@'(\\d+)\\:\\s\\w+\\s\\w+\\s([A-Z\\s]+)\\s\\w+\\sfrom\\s\\S+\\s(\\S+)\\s[\\w\\s\\-]+\\\"([a-z0-9:]+)\\\"\\,\\s[\\w\\s\\-]+\\\"([a-z0-9:]+)\\\"\\sfor\\s(\\S+)\\s\\((\\S+)\\)\\s([\\w\\s]+)\\.\\s\\((\\S+)\\)', dynamic([1,2,3,4,5,6,7,8,9]), RawData_subString)[0]\n    | extend Log_Type = strcat(Type,\" \",tostring(dhcpoption[0])),\n        Relay = tostring(dhcpoption[2]),  \n        PacketType = tostring(dhcpoption[1]),  \n        CircuitID = tostring(dhcpoption[3]),  \n        RemoteID = tostring(dhcpoption[4]),  \n        DvcIpAddr = tostring(dhcpoption[5]),  \n        DvcMacAddr = tostring(dhcpoption[6]),  \n        EventMessage = tostring(dhcpoption[7]),\n        State = tostring(dhcpoption[8])\n    | project-away SyslogMessage, dhcpoption,RawData_subString;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

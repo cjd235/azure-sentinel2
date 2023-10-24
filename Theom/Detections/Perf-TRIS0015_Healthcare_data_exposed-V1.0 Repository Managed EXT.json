@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/078b5614-54c7-41a6-8289-5b5870e4c0f9')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/078b5614-54c7-41a6-8289-5b5870e4c0f9')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Theom - Healthcare data exposed",
+        "description": "\"Creates Sentinel incidents for critical/high Theom risks, associated with ruleId TRIS0015 (Theom has observed healthcare data in a data store that is publicly exposed. As per this requirement, use this information to apply data access control lists or access permissions to secure your data)\"\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TheomAlerts_CL\n  | where customProps_RuleId_s == \"TRIS0015\" and (priority_s == \"P1\" or priority_s == \"P2\")\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "078b5614-54c7-41a6-8289-5b5870e4c0f9",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "\nSummary: {{summary_s}}  \nAdditional info: {{details_s}}\nPlease investigate further on Theom UI at {{deepLink_s}}\n",
+          "alertDisplayNameFormat": "Theom Alert ID: {{id_s}} "
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/66bc77ee-3e45-11ec-9bbc-0242ac130002')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/66bc77ee-3e45-11ec-9bbc-0242ac130002')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Zscaler - Connections by dormant user",
+        "description": "'Detects ZPA connections by dormant user.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let dt_lastlogintime = 14d;\nlet activeUsers =\nZPAEvent \n| where TimeGenerated > ago(dt_lastlogintime)\n| where DvcAction == 'open'\n| summarize lastLoginTime = max(TimeGenerated) by DstUserName\n| summarize makelist(DstUserName);\nZPAEvent\n| where DstUserName !in~ (activeUsers)\n| summarize EventCount = count() by DstUserName\n| project-away EventCount\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "66bc77ee-3e45-11ec-9bbc-0242ac130002",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

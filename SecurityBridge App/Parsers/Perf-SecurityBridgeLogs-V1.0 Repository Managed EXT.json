@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SecurityBridgeLogs')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SecurityBridgeLogs",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SecurityBridgeLogs",
+        "query": "SecurityBridgeLogs_CL\n| extend CEFVersion = tostring(split(RawData, '|')[0]), DeviceVendor = tostring(split(RawData, '|')[1]), DeviceProduct = tostring(split(RawData, '|')[2]), DeviceVersion = tostring(split(RawData, '|')[3]), DeviceEventClassID = tostring(split(RawData, '|')[4]), Name = tostring(split(RawData, '|')[5]), Severity = tostring(split(RawData, '|')[6]), AdditionalExtensions = tostring(split(RawData, '|')[7])\n| extend SAPsid = tostring(split(split(AdditionalExtensions, \"cs1=\")[1], \"cs1\")[0]),\n        SAPclient = tostring(split(split(AdditionalExtensions, \"cs2=\")[1], \"cs2\")[0]),\n        SAPdb = tostring(split(split(AdditionalExtensions, \"cs3=\")[1], \"cs3\")[0]),\n        [\"Email address event originator\"] = tostring(split(split(AdditionalExtensions, \"cs4=\")[1], \"cs4\")[0]),\n        [\"Main contact area of responsibility\"] = tostring(split(split(AdditionalExtensions, \"cs5=\")[1], \"cs5\")[0]),\n        [\"Backup contact area of responsibility\"] = tostring(split(split(AdditionalExtensions, \"cs6=\")[1], \"cs6\")[0])\n| extend dhost = tostring(replace_string(tostring(split(split(RawData, \"dhost=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"dhost=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         duid = tostring(replace_string(tostring(split(split(RawData, \"duid=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"duid=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         duser = tostring(replace_string(tostring(split(split(RawData, \"duser=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"duser=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         dvchost = tostring(replace_string(tostring(split(split(RawData, \"dvchost=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"dvchost=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         msg = tostring(split(split(RawData, \"msg=\")[1], \"rt=\")[0]),\n         rt = tostring(replace_string(tostring(split(split(RawData, \"rt=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"rt=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         src = tostring(replace_string(tostring(split(split(RawData, \"src=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"src=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         shost = tostring(replace_string(tostring(split(split(RawData, \"shost=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"shost=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         type = tostring(replace_string(tostring(split(split(RawData, \"type=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"type=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         externalid = tostring(replace_string(tostring(split(split(RawData, \"externalid=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"externalid=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         SAPos = tostring(replace_string(tostring(split(split(RawData, \"SAPos=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"SAPos=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         SAPrelease = tostring(replace_string(tostring(split(split(RawData, \"SAPrelease=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"SAPrelease=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         SAPinstallationnumber = tostring(replace_string(tostring(split(split(RawData, \"SAPinstallationnumber=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"SAPinstallationnumber=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         SAPhost = tostring(replace_string(tostring(split(split(RawData, \"SAPhost=\")[1], \"=\")[0]), tostring(split(split(split(RawData, \"SAPhost=\")[1], \"=\")[0], \" \")[-1]), \"\")),\n         Severity = case(toint(Severity) < 3, \"Low\", toint(Severity) < 7, \"Medium\", toint(Severity) < 9, \"High\", toint(Severity) >= 9, \"Critical\", \"None\"),\n         maincontact = split(split([\"Main contact area of responsibility\"], ',')[-1], ' ')[2]\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

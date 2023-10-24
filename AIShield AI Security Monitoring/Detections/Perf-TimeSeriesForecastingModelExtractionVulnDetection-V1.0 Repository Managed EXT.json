@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9cdf6e2d-d113-41ae-9e2e-30cc624d668a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9cdf6e2d-d113-41ae-9e2e-30cc624d668a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "AIShield - TimeSeries Forecasting model extraction vulnerability detection",
+        "description": "'This alert creates an incident when TimeSeries Forecasting model extraction vulnerability detected from the AIShield.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "AIShield\n| where Message has 'TimeSeries Forecasting AI Model Extraction Attack Identified'\n| where Severity =~ 'High'\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [],
+        "techniques": [],
+        "alertRuleTemplateName": "9cdf6e2d-d113-41ae-9e2e-30cc624d668a",
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "AIShield - TimeSeries Forecasting model extraction vulnerability detected.",
+          "alertTacticsColumnName": null,
+          "alertSeverityColumnName": "Severity",
+          "alertDescriptionFormat": "This query detects TimeSeries Forecasting model extraction vulnerability alert from AIShield generated at {{TimeGenerated}}\\n\\nPlease check the source for more information and investigate further.\n"
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

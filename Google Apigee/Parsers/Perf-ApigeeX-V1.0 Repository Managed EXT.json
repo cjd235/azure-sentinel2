@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ApigeeX')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ApigeeX",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ApigeeX",
+        "query": "ApigeeX_CL\n| extend EventVendor = 'Google'\n| extend EventProduct = 'ApigeeX'\n| project-rename\n    EventSeverity=severity_s,\n    EventEndTime=timestamp_t,\n    SrcIpAddr=payload_requestMetadata_callerIp_s,\n    HttpUserAgentOriginal=payload_requestMetadata_callerSuppliedUserAgent_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

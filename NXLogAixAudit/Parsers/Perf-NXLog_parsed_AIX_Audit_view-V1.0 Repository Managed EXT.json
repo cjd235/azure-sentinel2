@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(NXLog_parsed_AIX_Audit_view')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "NXLog_parsed_AIX_Audit_view",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "NXLog_parsed_AIX_Audit_view",
+        "query": "let NXLog_parsed_AIX_Audit_view = view () {\n  AIX_Audit_CL\n  | project-rename\n    CommandLine=Command_s,\n    EventReceivedTime=EventReceivedTime_t,\n    EventEndTime=EventTime_t,\n    EventType=EventType_s,\n    DvcHostname=Hostname_s,\n    Username=Login_s,\n    UserId=LoginUID_d,\n    MessageSourceAddress=MessageSourceAddress_s,\n    ParentProcessId=ParentPID_d,\n    ProcessId=PID_d,\n    RealUsername=Real_s,\n    RealUserId=RealUID_d,\n    SourceModuleName=SourceModuleName_s,\n    SourceModuleType=SourceModuleType_s,\n    EventResultDetails=Status_d,\n    Thread=Thread_d,\n    Verbose=Verbose_s,\n    WPARkey=WPARkey_d,\n    WPARname=WPARname_s\n};\nNXLog_parsed_AIX_Audit_view();\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

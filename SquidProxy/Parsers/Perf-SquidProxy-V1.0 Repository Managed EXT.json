@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SquidProxy')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SquidProxy",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SquidProxy",
+        "query": "SquidProxy_CL\n| parse RawData with * \" \" EpochTimeExtended \" \" Duration \" \" SrcIpAddr \" \" ResultStatusCode \" \" Bytes \" \" HttpRequestMethod \" \" Url \" \" Username \" \" PeerStatusHost \" \" ContentType\n| parse EpochTimeExtended with * \"+\" EpochTime\n| parse ResultStatusCode with ResultCode \"/\" StatusCode\n| parse PeerStatusHost with PeerHost \"/\" StatusHost\n| extend EventEpochTime = tolong(replace(@\"\\.\",\"\",EpochTime))\n| extend EventTime = datetime(1970-01-01) + tolong(EventEpochTime/1000) * 1sec\n| extend CacheRawLog = extract_all(@\"^([0-9\\/]+\\s[0-9\\:]+)\\s(\\S+)\\s([\\S\\s]+)\", dynamic([1,2,3]), RawData)\n| mv-expand CacheRawLog\n| extend CacheEventTime = todatetime(replace(\"/\",\"-\",tostring(CacheRawLog[0]))),\n         Description = tostring(CacheRawLog[2])\n| extend EventTime = iif(isempty(EventTime), CacheEventTime, EventTime)\n| project-away RawData, EpochTime, EventEpochTime, CacheRawLog, CacheEventTime\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

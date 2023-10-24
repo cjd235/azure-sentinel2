@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(MuleSoftCloudhub')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "MuleSoftCloudhub",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "MuleSoftCloudhub",
+        "query": "MuleSoft_Cloudhub_CL\n| extend EventVendor = 'MuleSoft',\n         EventProduct = 'Cloudhub',\n         EventCount = 1,\n         LastModified = unixtime_milliseconds_todatetime(lastModified_d),\n         CreatedAt = unixtime_milliseconds_todatetime(createdAt_d),\n         EventEndTime = unixtime_milliseconds_todatetime(event_timestamp_d)\n| project-rename AdditionalData=actions_s,\n                 ConditionResourceType=condition_resourceType_s,\n                 ConditionResources=condition_resources_s,\n                 EventResultDetails=condition_type_s,\n                 DeploymentId=deploymentId_s,\n                 Enabled=enabled_b,\n                 EnvironmentId=environmentId_g,\n                 EventLoggerName=event_loggerName_s,\n                 EventMessage=event_message_s,\n                 EventPriority=event_priority_s,\n                 EventThreadName=event_threadName_s,\n                 EventType=event_type_s,\n                 EventOriginalUid=id_g,\n                 InstanceId=instanceId_s,\n                 IsSystem=isSystem_b,\n                 Line=line_d,\n                 EventResult=name_s,\n                 OrganizationId=organizationId_g,\n                 RecordId=recordId_s,\n                 EventSeverity=severity_s\n| project-away productName_s,\n               lastModified_d,\n               createdAt_d,\n               event_timestamp_d\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

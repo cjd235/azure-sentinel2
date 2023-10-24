@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ExchangeEnvironmentList')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ExchangeEnvironmentList",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ExchangeEnvironmentList",
+        "query": "let _target = iff(isnull(Target) or isempty(Target),\"On-Premises\",Target);\nlet ScalarbaseRequest = union isfuzzy=true withsource=TableName ESIAPIExchange*,ESIExchange*\n    | extend Source = iff (TableName contains \"Online\", \"Online\", \"On-Premises\")\n    | where _target == 'All' or Source == _target;\n// Base Request\nScalarbaseRequest | summarize by ESIEnvironment_s | project-rename ESIEnvironment = ESIEnvironment_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcpoffer')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcpoffer",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcpoffer",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nlet RawData = Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has \"DHCPOFFER\"\n    | extend Parser = extract_all(@\"^(\\d{2}\\-[a-zA-Z]{3}\\-\\d{4}\\s[0-9\\.\\:]+)?\\s?([a-zA-Z-_]+)(\\s|\\:)?(.*)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n    | extend responseTime = todatetime(Parser[0]),\n            Log_Type = tostring(Parser[1]),\n            RawData_subString = tostring(Parser[3])\n    | project-away Parser;\nRawData\n    | extend dhcpoffer = extract_all(@\"\\w+\\s(\\S+)(\\s\\w+\\s((\\S+)(\\s\\(\\S+\\))?))?\\svia\\s(\\S+)(\\srelay\\s(\\S+))?(\\slease-duration\\s(\\d+))?(\\soffered-duration\\s(\\d+))?(\\sUID\\s(\\S+))?\", dynamic([1,2,3,4,5,6,7,8,9,10,11,12,13,14]), RawData_subString)[0]\n    | extend SrcIpAddr = tostring(dhcpoffer[0]),  \n        SrcMacAddr = tostring(dhcpoffer[3]),\n        Interface = tostring(dhcpoffer[5]),\n        Relay = tostring(dhcpoffer[7]), \n        LeaseDuration = tostring(dhcpoffer[9]),\n        OfferedDuration = tostring(dhcpoffer[11]),\n        SrcHostname = tostring(dhcpoffer[4]),\n        SrcUserIdType = tostring(dhcpoffer[13])\n       | project-away SyslogMessage, dhcpoffer,RawData_subString;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

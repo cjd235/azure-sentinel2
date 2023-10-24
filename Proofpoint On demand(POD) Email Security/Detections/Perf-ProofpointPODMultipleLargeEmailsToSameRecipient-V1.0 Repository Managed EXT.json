@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d1aba9a3-5ab1-45ef-8ed4-da57dc3c0d32')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d1aba9a3-5ab1-45ef-8ed4-da57dc3c0d32')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "ProofpointPOD - Multiple large emails to the same recipient",
+        "description": "'Detects when multiple emails with large size where sent to the same recipient.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lbtime = 30m;\nlet msgthreshold = 3;\nlet msgszthreshold = 3000000;\nProofpointPOD\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'message'\n| where NetworkDirection == 'outbound'\n| where NetworkBytes > msgszthreshold\n| summarize count() by SrcUserUpn, DstUserUpn\n| where count_ > msgthreshold\n| extend AccountCustomEntity = SrcUserUpn\n",
+        "queryFrequency": "PT30M",
+        "queryPeriod": "PT30M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1567"
+        ],
+        "alertRuleTemplateName": "d1aba9a3-5ab1-45ef-8ed4-da57dc3c0d32",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

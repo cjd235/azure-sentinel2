@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e46c5588-e643-4a60-a008-5ba9a4c84328')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e46c5588-e643-4a60-a008-5ba9a4c84328')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco Duo - Multiple admin 2FA failures",
+        "description": "'Detects when multiple admin 2FA failures occurs.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let threshold = 10;\nCiscoDuo\n| where DvcAction =~ \"admin_2fa_error\"\n| summarize count() by DstUserName, bin(TimeGenerated, 10m)\n| where count_ > threshold\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "e46c5588-e643-4a60-a008-5ba9a4c84328",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

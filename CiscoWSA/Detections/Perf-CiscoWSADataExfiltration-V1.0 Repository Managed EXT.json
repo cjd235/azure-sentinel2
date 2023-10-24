@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/32c460ad-2d40-43e9-8ead-5cdd1d7a3163')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/32c460ad-2d40-43e9-8ead-5cdd1d7a3163')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco WSA - Unexpected uploads",
+        "description": "'Detects unexpected file uploads.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let f_cnt_upload_threshold = 5;\nlet f_upload_size_threshold = 5000000;\nCiscoWSAEvent\n| where HttpRequestMethod in~ ('POST', 'PUT')\n| where isnotempty(AmpFileName)\n| where UrlCategory in~ ('IW_fts', 'IW_osb')\n| where DstBytes > f_upload_size_threshold\n| summarize count() by AmpFileName, SrcUserName, bin(TimeGenerated, 10m)\n| where count_ >= f_cnt_upload_threshold\n| extend AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1567"
+        ],
+        "alertRuleTemplateName": "32c460ad-2d40-43e9-8ead-5cdd1d7a3163",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

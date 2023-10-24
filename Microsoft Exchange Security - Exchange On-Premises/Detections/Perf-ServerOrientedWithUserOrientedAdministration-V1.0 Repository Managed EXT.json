@@ -1,0 +1,91 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7bce901b-9bc8-4948-8dfc-8f68878092d5')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7bce901b-9bc8-4948-8dfc-8f68878092d5')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Server Oriented Cmdlet And User Oriented Cmdlet used",
+        "description": "'Detect if a server oriented Cmdlet and a user oriented cmdlet that are monitored are launched by a same user in a same server in a 10 minutes timeframe'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let timeframe = 1d;\nlet spanoftime = 10m;\nlet threshold = 0;\nExchangeAdminAuditLogs \n  | where TimeGenerated > ago(2 * timeframe)\n  | where isempty(UserOriented)\n  | project serverExecutedTime = TimeGenerated,\n    ServerCmdlet = CmdletName,\n    ServerCmdletParams = CmdletParameters,\n    Computer,\n    Caller,\n    ServerCmdletTargetObject = TargetObject\n  | join kind= inner (\n      ExchangeAdminAuditLogs\n      | where TimeGenerated > ago(timeframe)\n      | where UserOriented =~ 'Yes'\n      | lookup kind=leftouter _GetWatchlist('ExchangeVIP') on $left.TargetObject == $right.canonicalName\n      | project userExecutedTime = TimeGenerated,\n        UserCmdlet = CmdletName,\n        UserCmdletParams = CmdletParameters,\n        Computer,\n        Caller,\n        UserCmdletTargetObject = TargetObject,\n        userPrincipalName,\n        objectGUID,\n        sAMAccountName,\n        IsVIP)\n    on Computer, Caller\n  | where userExecutedTime - serverExecutedTime < spanoftime\n  | extend TimeDelta = userExecutedTime - serverExecutedTime\n  | extend TimeDeltaInverse = serverExecutedTime - userExecutedTime\n  | where tolong(TimeDelta) >= threshold or tolong(TimeDeltaInverse) >= threshold\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration",
+          "Persistence",
+          "Collection"
+        ],
+        "techniques": [
+          "T1020",
+          "T1098",
+          "T1114"
+        ],
+        "alertRuleTemplateName": "7bce901b-9bc8-4948-8dfc-8f68878092d5",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "MailboxPrimaryAddress",
+                "columnName": "userPrincipalName"
+              },
+              {
+                "identifier": "Upn",
+                "columnName": "userPrincipalName"
+              }
+            ],
+            "entityType": "Mailbox"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "Computer"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "ServerCmdletTargetObject"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Caller"
+              },
+              {
+                "identifier": "ObjectGuid",
+                "columnName": "TargetObject"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

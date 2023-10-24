@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/eabb9c20-7b0b-4a77-81e8-b06944f351c6')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/eabb9c20-7b0b-4a77-81e8-b06944f351c6')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SE - Unexpected binary file",
+        "description": "'Detects binary files in uncommon locations.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "CiscoSecureEndpoint\n| where isnotempty(SrcFileName)\n| where SrcFilePath contains @'AppData\\Local\\Temp' or SrcFilePath contains @'OUTLOOK_TEMP'\n| extend ext = extract(@\"(.*\\/)?(.*)\", 2, tostring(SrcFilePath))\n| where ext contains 'dll' or ext contains @'ps1' or ext contains @'exe'\n| extend HostCustomEntity = DstHostname\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "eabb9c20-7b0b-4a77-81e8-b06944f351c6",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

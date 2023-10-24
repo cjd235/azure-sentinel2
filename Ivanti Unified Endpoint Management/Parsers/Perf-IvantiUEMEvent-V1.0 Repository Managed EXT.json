@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(IvantiUEMEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "IvantiUEMEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "IvantiUEMEvent",
+        "query": "Syslog\n| where SyslogMessage has_all ('Alert', 'Message')\n| extend EventVendor = 'Ivanti'\n| extend EventProduct = 'Ivanti Unified Endpoint Management'\n| extend EventCount = 1\n| extend EventSchemaVersion = 0.2\n| extend ed = split(SyslogMessage, ' ')\n| extend SrcHostname = extract(@'\\A([A-Za-z0-9_-]+)\\.\\w+', 1, tostring(ed[0]))\n| extend SrcDomain = extract(@'\\A[A-Za-z0-9_-]+\\.(.*)', 1, tostring(ed[0]))\n| extend EventType = trim(' ', extract(@'Alert:\\s(.*?)Message:', 1, SyslogMessage))\n| extend EventMessage = extract(@'Message:\\s(.*)', 1, SyslogMessage)\n| project-away SyslogMessage\n             , ed\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

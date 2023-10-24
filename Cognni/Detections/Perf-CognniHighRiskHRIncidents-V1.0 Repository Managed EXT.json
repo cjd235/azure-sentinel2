@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f68846cf-ec99-497d-9ce1-80a9441564fb')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f68846cf-ec99-497d-9ce1-80a9441564fb')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cognni Incidents for Highly Sensitive HR Information",
+        "description": "'Display incidents in which highly sensitive HR information was placed at risk by user sharing.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let highRisk = 3;\nlet hr = 'HR Information';\nCognniIncidents_CL \n| where Severity == highRisk\n| where informationType_s == hr\n| where TimeGenerated >= ago(5h)\n| extend AccountCustomEntity = userId_s\n",
+        "queryFrequency": "PT5H",
+        "queryPeriod": "PT5H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1530"
+        ],
+        "alertRuleTemplateName": "f68846cf-ec99-497d-9ce1-80a9441564fb",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

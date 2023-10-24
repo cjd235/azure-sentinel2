@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/22a613ea-c338-4f91-bbd3-3be97b00ebf9')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/22a613ea-c338-4f91-bbd3-3be97b00ebf9')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Google DNS - UNC2452 (Nobelium) APT Group activity",
+        "description": "'Detects UNC2452 (Nobelium) APT Group activity.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "GCPCloudDNS\n| where Query has_any ('tomasubiera.com', 'theandersonco.com', 'stonecrestnews.com', 'nordicmademedia.com')\n| extend DNSCustomEntity = Query, IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1095"
+        ],
+        "alertRuleTemplateName": "22a613ea-c338-4f91-bbd3-3be97b00ebf9",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DNSCustomEntity"
+              }
+            ],
+            "entityType": "DNS"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

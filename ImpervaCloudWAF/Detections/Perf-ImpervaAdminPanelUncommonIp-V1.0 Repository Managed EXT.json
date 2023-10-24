@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/427c025d-c068-4844-8205-66879e89bcfa')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/427c025d-c068-4844-8205-66879e89bcfa')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Imperva - Request from unexpected IP address to admin panel",
+        "description": "'Detects requests from unexpected IP addresses to admin panel.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "ImpervaWAFCloud\n| where QueryString contains @'/admin'\n| where ipv4_is_private(SrcIpAddr) == False\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "427c025d-c068-4844-8205-66879e89bcfa",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

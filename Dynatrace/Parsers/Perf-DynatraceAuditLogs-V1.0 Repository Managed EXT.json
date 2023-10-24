@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DynatraceAuditLogs')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DynatraceAuditLogs",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DynatraceAuditLogs",
+        "query": "DynatraceAuditLogs_CL\n| extend EventVendor = 'Dynatrace'\n| extend EventProduct = 'Audit'\n| extend Severity = 'Informational'\n| project-rename\n    LogId = logId_s,\n    EnvironmentId = environmentId_s,\n    EventType = eventType_s,\n    UserOrigin = userOrigin_s,\n    UserType = userType_s,\n    User = user_s,\n    Success = success_b,\n    TimeStamp = timestamp_d\n| project-away entityId_s, patch_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

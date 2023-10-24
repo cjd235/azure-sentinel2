@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/034f62b6-df51-49f3-831f-1e4cfd3c40d2')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/034f62b6-df51-49f3-831f-1e4cfd3c40d2')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco Duo - Multiple user login failures",
+        "description": "'Detects when multiple user login failures occurs.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let threshold = 10;\nCiscoDuo\n| where EventType =~ 'authentication'\n| where EventResult in~ ('denied', 'failure')\n| summarize count() by DstUserName, bin(TimeGenerated, 10m)\n| where count_ > threshold\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "034f62b6-df51-49f3-831f-1e4cfd3c40d2",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

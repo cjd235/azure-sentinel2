@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightDiligenceHistoricalStatistics')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightDiligenceHistoricalStatistics",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightDiligenceHistoricalStatistics",
+        "query": "let DiligenceHistoricalStatistics_view  = view () {\n    Diligence_historical_statistics_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"DiligenceHistoricalStatistics\",\n                Count = column_ifexists('count_d', ''),\n                Category = column_ifexists('Category', ''),\n                Date = column_ifexists('date_s', ''),\n                CompanyName = column_ifexists('company_name_s', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                Count,\n                Category,\n                Date,\n                CompanyName,\n                Type\n};\nDiligenceHistoricalStatistics_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

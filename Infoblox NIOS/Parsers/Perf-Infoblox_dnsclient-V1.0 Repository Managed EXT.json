@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dnsclient')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dnsclient",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dnsclient",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\n// Parse Response Logs\nlet response =\n    Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has_all (\"client\", \"query:\", \"response:\")\n    | parse SyslogMessage with *\n        \"client \" SrcIpAddr: string\n        \"#\" SrcPortNumber: string\n        \" \" NetworkProtocol: string\n        \": query: \" DnsQuery: string\n        \" \" DnsQueryClassName: string\n        \" \" DnsQueryType: string\n        \" response: \" DnsResponseCode: string\n        \" \" DnsFlags: string\n    | extend DnsResponseNameIndex= indexof(DnsFlags, \" \")\n    | extend EventMessage =iif(DnsResponseNameIndex != \"-1\", substring(DnsFlags, DnsResponseNameIndex+1), \"\")\n    | extend DnsFlags =iif(DnsResponseNameIndex != \"-1\", substring(DnsFlags, 0, DnsResponseNameIndex), DnsFlags)\n    | extend SrcPortNumber = iif(SrcPortNumber has ':',replace_string(SrcPortNumber,':',''),SrcPortNumber)\n    | extend SrcPortNumber = toint(SrcPortNumber)\n    | extend EventSubType = \"response\"\n    | project-away DnsResponseNameIndex,SyslogMessage;\n//\n// Parse Request Logs\n//\nlet request =\n    Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has_all (\"client\", \"query:\")\n        and SyslogMessage !has \"response:\"\n    | extend SyslogMessage = (split(SyslogMessage,\"client \"))[1]\n    | extend SyslogMessage = iif(SyslogMessage startswith \"@\", (substring(SyslogMessage, indexof(SyslogMessage, \" \")+1)), SyslogMessage)\n    | extend SyslogMessage = replace_string(SyslogMessage,\"\\\\ \",\"@@@\")\n    | parse SyslogMessage with \n        SrcIpAddr: string\n        \"#\" SrcPortNumber: int *\n        \"query: \" DnsQuery: string\n        \" \" DnsQueryClassName: string\n        \" \" DnsQueryType: string\n        \" \" DnsFlags: string\n    | extend DnsQuery = replace_string (DnsQuery, '@@@', ' ')\n    | extend DnsFlags= tostring((split(DnsFlags,\" \"))[0])\n    | extend EventSubType = \"request\",DnsResponseCode = \"NA\"\n    | project-away SyslogMessage\n    ;\n//\n// Union Request and Response Logs\n//\nlet Infoblox_NIOS_ParsedData =\n    union response, request\n    | extend\n        EventProduct=\"NIOS\",\n        EventVendor=\"Infoblox\",\n        EventType=\"Query\",\n        EventResult=iff(EventSubType==\"request\" or DnsResponseCode==\"NOERROR\",\"Success\",\"Failure\"),\n        Log_Type=\"client\",\n        responseTime=EventTime;\nInfoblox_NIOS_ParsedData\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

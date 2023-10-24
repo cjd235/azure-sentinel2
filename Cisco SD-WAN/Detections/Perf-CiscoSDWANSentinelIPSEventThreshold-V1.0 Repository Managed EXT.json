@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/dc3627c3-f9de-4f17-bfd3-ba99b64a0a67')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/dc3627c3-f9de-4f17-bfd3-ba99b64a0a67')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SDWAN - IPS Event Threshold",
+        "description": "'This analytic rule will monitor specific IPS event in the data.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "CiscoSyslogUTD \n| where Classification == \"Enter classification\" \n| summarize count() by Classification \n| where count_ > 10\n",
+        "queryFrequency": "PT3H",
+        "queryPeriod": "PT3H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "alertRuleTemplateName": "dc3627c3-f9de-4f17-bfd3-ba99b64a0a67",
+        "incidentConfiguration": {
+          "createIncident": true
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "customDetails": {
+          "classification_count": "count_",
+          "classification": "Classification"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Classification"
+              }
+            ],
+            "entityType": "Malware"
+          }
+        ],
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

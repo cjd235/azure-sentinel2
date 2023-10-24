@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e7470b35-0128-4508-bfc9-e01cfb3c2eb7')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e7470b35-0128-4508-bfc9-e01cfb3c2eb7')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Detecting Macro Invoking ShellBrowserWindow COM Objects",
+        "description": "'This query detects a macro invoking ShellBrowserWindow COM Objects evade naive parent/child Office detection rules.\nRef: https://blog.menasec.net/2019/02/threat-hunting-doc-with-macro-invoking.html'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Event\n | where EventLog =~ \"Microsoft-Windows-Sysmon/Operational\" and EventID==1\n | parse EventData with * 'Image\">' Image \"<\" * 'CommandLine\">' CommandLine \"<\" * 'ParentImage\">' ParentImage \"<\" *\n | where ParentImage has \"svchost.exe\" and Image has \"rundll32.exe\" and CommandLine has \"{c08afd90-f2a1-11d1-8455-00a0c91f3880}\"\n | parse EventData with * 'ProcessGuid\">' ProcessGuid \"<\" * 'Description\">' Description \"<\" * 'CurrentDirectory\">' CurrentDirectory \"<\" * 'User\">' User \"<\" * 'LogonGuid\">' LogonGuid \"<\" * 'ParentProcessGuid\">' ParentProcessGuid \"<\" * 'ParentImage\">' ParentImage \"<\" * 'ParentCommandLine\">' ParentCommandLine \"<\" * 'ParentUser\">' ParentUser \"<\" *\n | summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by EventID, Computer, User, ParentImage, ParentProcessGuid, ParentCommandLine, ParentUser, Image, ProcessGuid, CommandLine, Description\n | extend HostName = iif(Computer has '.',substring(Computer,0,indexof(Computer,'.')),Computer) , DnsDomain = iif(Computer has '.',substring(Computer,indexof(Computer,'.')+1),'')\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement"
+        ],
+        "techniques": [
+          "T1021.003"
+        ],
+        "alertRuleTemplateName": "e7470b35-0128-4508-bfc9-e01cfb3c2eb7",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "CommandLine"
+              }
+            ],
+            "entityType": "Process"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "HostName"
+              },
+              {
+                "identifier": "DnsDomain",
+                "columnName": "DnsDomain"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "User"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

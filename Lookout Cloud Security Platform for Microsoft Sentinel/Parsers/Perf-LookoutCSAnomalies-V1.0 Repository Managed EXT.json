@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(LookoutCSAnomalies')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "LookoutCSAnomalies",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "LookoutCSAnomalies",
+        "query": "LookoutCloudSecurity_CL\n| extend timeStamp = timeStamp_t\n| extend eventType = eventType_s\n| extend actionType = actionType_s\n| extend anomalyType = column_ifexists('anomalyType_s', '')\n| extend appName = appName_s\n| extend userEmail = column_ifexists('userEmail_s','')\n| extend anomalyName = column_ifexists('anomalyName_s', '')\n| extend currentCity = column_ifexists('currentCity_s', '')\n| extend currentTimestamp = column_ifexists('currentTimestamp_t', '')\n| extend previousTimestamp = column_ifexists('previousTimestamp_t', '')\n| extend currentEventId = column_ifexists('currentEventId_g', '')\n| extend previousEventId = column_ifexists('previousEventId_g', '')\n| where eventType == 'Anomaly'\n| project\n    timeStamp,\n    eventType,\n    actionType,\n    anomalyType,\n    appName,\n    userEmail,\n    anomalyName,\n    currentCity,\n    currentTimestamp,\n    previousTimestamp,\n    currentEventId,\n    previousEventId\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

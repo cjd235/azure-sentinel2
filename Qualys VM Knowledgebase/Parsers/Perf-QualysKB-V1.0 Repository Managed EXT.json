@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(QualysKB')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "QualysKB",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "QualysKB",
+        "query": "QualysKB_CL\n| project SourceSystem, TimeGenerated, Type, TenantId, MG, ManagementGroupName, Computer, RawData, _ResourceId,\n    Qid = column_ifexists(\"QID_s\", \"\"),\n    Title = column_ifexists(\"Title_s\", \"\"),\n    Category = column_ifexists(\"Category\", \"\"),\n    Consquence = column_ifexists(\"Consequence_s\", \"\"),\n    Diagnosis = column_ifexists(\"Diagnosis_s\", \"\"),\n    LastServiceModificationDateTime = column_ifexists(\"Last_Service_Modification_DateTime_t \", \"\"),\n    Patchable = column_ifexists(\"Patchable_s\", \"\"),\n    CveId = column_ifexists(\"CVE_ID_s\", \"\"),\n    CveUrl = column_ifexists(\"CVE_URL_s\", \"\"),\n    VendorReferenceId = column_ifexists(\"Vendor_Reference_ID_s\", \"\"),\n    VendorReferenceUrl = column_ifexists(\"Vendor_Reference_URL_s\", \"\"),\n    PciFlag = column_ifexists(\"PCI_Flag_s\", \"\"),\n    PublishedDateTime = column_ifexists(\"Published_DateTime_t \", \"\"),\n    Severity = column_ifexists(\"Severity_Level_s\", \"\"),\n    SoftwareProduct = column_ifexists(\"Software_Product_s\", \"\"),\n    SoftwareVendor = column_ifexists(\"Software_Vendor_s\", \"\"),\n    Solution = column_ifexists(\"Solution_s\", \"\"),\n    VulnType = column_ifexists(\"Vuln_Type_s\", \"\"),\n    DiscoveryAdditionalInfo = column_ifexists(\"Discovery_Additional_Info_s\", \"\"),\n    DiscoveryRemote = column_ifexists(\"Discovery_Remote_s\", \"\"),\n    DiscoverAuthType = column_ifexists(\"Discovery_Auth_Type_s\", \"\")\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

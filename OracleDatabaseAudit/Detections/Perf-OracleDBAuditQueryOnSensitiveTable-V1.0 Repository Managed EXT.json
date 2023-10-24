@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d7fdcad5-ce96-4db6-9a5e-4a86a5166e5e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d7fdcad5-ce96-4db6-9a5e-4a86a5166e5e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "OracleDBAudit - Query on Sensitive Table",
+        "description": "'Detects when user queries sensitive tables.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let sensitive_tbls = dynamic(['table_name1', 'table_name2']);\nOracleDatabaseAuditEvent\n| where isnotempty(DstUserName)\n| where isnotempty(Action)\n| extend TableName = replace(@'[,\\(\\)]', '', extract(@'(?i)SELECT(.*?)FROM\\s(.*?)\\s', 2, Action))\n| where isnotempty(TableName)\n| where TableName in (sensitive_tbls)\n| project TableName, DstUserName, DbAction\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT30M",
+        "queryPeriod": "PT30M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "alertRuleTemplateName": "d7fdcad5-ce96-4db6-9a5e-4a86a5166e5e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e632e73a-06c4-47f6-8bed-b2498aa6e30f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e632e73a-06c4-47f6-8bed-b2498aa6e30f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Google DNS - CVE-2021-34527 (PrintNightmare) external exploit",
+        "description": "'Detects CVE-2021-34527 (PrintNightmare) external exploit'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "GCPCloudDNS\n| where Query has 'gentilkiwi'\n| extend DNSCustomEntity = Query, IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "PrivilegeEscalation"
+        ],
+        "techniques": [
+          "T1068"
+        ],
+        "alertRuleTemplateName": "e632e73a-06c4-47f6-8bed-b2498aa6e30f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DNSCustomEntity"
+              }
+            ],
+            "entityType": "DNS"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

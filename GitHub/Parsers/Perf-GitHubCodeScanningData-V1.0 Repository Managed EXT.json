@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GitHubCodeScanningData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GitHubCodeScanningData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GitHubCodeScanningData",
+        "query": "githubscanaudit_CL \n| where action_s in ('created', 'reopened_by_user', 'closed_by_user', 'fixed', 'appeared_in_branch', 'reopened') and isnotempty(commit_oid_s)\n| extend EventType='CodeScanningAlert'\n| extend alert = todynamic(alert_s),\n    organization = todynamic(organization_s),\n    repository = todynamic(repository_s),\n    sender = todynamic(sender_s) \n| extend alertcreatedate = alert.created_at, url = alert.url, commit_oid = commit_oid_s,\n    alertdescription = alert.rule.description,\n    toolname = alert.tool.name,\n    repositoryfullname = repository.full_name,\n    repositoryOwnerlogin = repository.owner.login,\n    repositoryurl = repository.url,\n    orglogin = organization.login,\n    orgurl = organization.url,\n    senderlogin = sender.login,\n    sendertype = sender.type,\n    action=action_s\n| project-keep\n    TimeGenerated,\n    EventType,\n    action,\n    alertdescription,\n    alertcreatedate,\n    commit_oid,\n    toolname,\n    repositoryfullname,\n    repositoryOwnerlogin,\n    repositoryurl,\n    orglogin,\n    orgurl,\n    senderlogin,\n    sendertype\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

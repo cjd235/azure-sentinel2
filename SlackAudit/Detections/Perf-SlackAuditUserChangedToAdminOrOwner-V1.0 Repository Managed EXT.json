@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/be6c5fc9-2ac3-43e6-8fb0-cb139e04e43e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/be6c5fc9-2ac3-43e6-8fb0-cb139e04e43e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "SlackAudit - User role changed to admin or owner",
+        "description": "'This query helps to detect a change in the users role to admin or owner.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "SlackAudit\n| where DvcAction in~ ('role_change_to_admin', 'role_change_to_owner')\n| extend AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence",
+          "PrivilegeEscalation"
+        ],
+        "techniques": [
+          "T1098",
+          "T1078"
+        ],
+        "alertRuleTemplateName": "be6c5fc9-2ac3-43e6-8fb0-cb139e04e43e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

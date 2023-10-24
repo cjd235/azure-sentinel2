@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9a8b4321-e2be-449b-8227-a78227441b2a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9a8b4321-e2be-449b-8227-a78227441b2a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Claroty - Critical baseline deviation",
+        "description": "'Detects when critical deviation from baseline occurs.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "ClarotyEvent\n| where EventOriginalType has 'Baseline Deviation' or EventType has 'Baseline Deviation'\n| where EventSeverity == '5'\n| project TimeGenerated, DstIpAddr\n| extend IPCustomEntity = DstIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1529"
+        ],
+        "alertRuleTemplateName": "9a8b4321-e2be-449b-8227-a78227441b2a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

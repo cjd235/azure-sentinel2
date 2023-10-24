@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1db49647-435c-41ad-bf8c-7130ba75429d')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1db49647-435c-41ad-bf8c-7130ba75429d')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco WSA - Multiple errors to URL",
+        "description": "'Detects multiple connection errors to URL.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 5;\nCiscoWSAEvent\n| where DvcAction =~ 'NONE'\n| summarize count() by SrcUserName, UrlOriginal, bin(TimeGenerated, 5m)\n| where count_ >= threshold\n| extend URLCustomEntity = UrlOriginal, AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1102"
+        ],
+        "alertRuleTemplateName": "1db49647-435c-41ad-bf8c-7130ba75429d",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "URLCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

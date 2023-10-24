@@ -1,0 +1,65 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7593cc60-e294-402d-9202-279fb3c7d55f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7593cc60-e294-402d-9202-279fb3c7d55f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Lookout - New Threat events found.",
+        "description": "'Created to detect new Threat events from the data which is recently synced by Lookout Solution.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "Lookout_CL\n| where details_action_s == 'DETECTED' and type_s == 'THREAT'\n| extend DetailsPackageName = details_packageName_s\n| extend TargetPlatform = target_platform_s\n| extend TargetOsVersion = target_osVersion_s\n| extend Type = type_s\n| extend Severity = details_severity_s\n| extend Classifications = details_classifications_s\n| extend Platform = target_platform_s\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1057"
+        ],
+        "alertRuleTemplateName": "7593cc60-e294-402d-9202-279fb3c7d55f",
+        "customDetails": {
+          "Severity": "Severity",
+          "Classification": "Classifications",
+          "Platform": "Platform",
+          "Type": "Type"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DetailsPackageName"
+              },
+              {
+                "identifier": "OSFamily",
+                "columnName": "TargetPlatform"
+              },
+              {
+                "identifier": "OSVersion",
+                "columnName": "TargetOsVersion"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

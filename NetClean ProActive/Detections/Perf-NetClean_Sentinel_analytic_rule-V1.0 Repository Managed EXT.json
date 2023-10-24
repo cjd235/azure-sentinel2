@@ -1,0 +1,87 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/77548170-5c60-42e5-bdac-b0360d0779bb')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/77548170-5c60-42e5-bdac-b0360d0779bb')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "NetClean ProActive Incidents",
+        "description": "'NetClean Incident'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "Netclean_Incidents_CL |  where version_s == 1\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1083"
+        ],
+        "alertRuleTemplateName": "77548170-5c60-42e5-bdac-b0360d0779bb",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "A new NetClean {{agentType_s}} {{type_s}} has been Created {{TimeGenerated}}",
+          "alertDisplayNameFormat": "NetClean {{agentType_s}} {{type_s}}"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Value",
+                "columnName": "sha1_s"
+              },
+              {
+                "identifier": "Algorithm",
+                "columnName": "detectionMethod_s"
+              }
+            ],
+            "entityType": "FileHash"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "domain_s"
+              }
+            ],
+            "entityType": "DNS"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "Hostname_s"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "externalIP_s"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

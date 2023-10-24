@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9e7b3811-d743-479c-a296-635410562429')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9e7b3811-d743-479c-a296-635410562429')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Trend Micro CAS - Possible phishing mail",
+        "description": "'Detects possible phishing mail.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 5;\nTrendMicroCAS\n| where EventCategoryType in~ ('exchange', 'gmail', 'exchangeserver')\n| where isnotempty(SrcFileName)\n| where isnotempty(SecurityRiskName)\n| summarize r_users = makeset(DstUserName) by SrcFileName, bin(TimeGenerated, 30m)\n| where array_length(r_users) > threshold\n| extend AccountCustomEntity = r_users\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "9e7b3811-d743-479c-a296-635410562429",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

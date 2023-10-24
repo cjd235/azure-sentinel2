@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/58688058-68b2-4b39-8009-ac6dc4d81ea1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/58688058-68b2-4b39-8009-ac6dc4d81ea1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Zero Networks Segment - Rare JIT Rule Creation",
+        "description": "'Identifies when a JIT Rule connection is new or rare by a given account today based on comparison with the previous 14 days.\nJIT Rule creations are indicated by the Activity Type Id 20'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let starttime = 14d;\nlet endtime = 1d;\nZNSegmentAudit\n| where TimeGenerated >= ago(endtime)\n| where AuditTypeId == 20\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), ConnectionCount = count()\nby PerformedByName, tostring(DestinationEntityName)\n  // use left anti to exclude anything from the previous 14 days that is not rare\n| join kind=leftanti (\nZNSegmentAudit\n| where TimeGenerated between (ago(starttime) .. ago(endtime))\n| where AuditTypeId == 20\n| summarize by tostring(DestinationEntityName)\n) on DestinationEntityName\n| summarize StartTime = min(StartTime), EndTime = max(EndTime), ConnectionCount = sum(ConnectionCount)\nby PerformedByName, DestinationEntityName\n| extend TimeGenerated = StartTime\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement"
+        ],
+        "techniques": [
+          "T1021"
+        ],
+        "alertRuleTemplateName": "58688058-68b2-4b39-8009-ac6dc4d81ea1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "PerformedByName"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "DestinationEntityName"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.2"
+      }
+    }
+  ]
+}

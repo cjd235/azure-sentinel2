@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f258fa0c-e26c-4e2b-94fb-88b6cef0ca6e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f258fa0c-e26c-4e2b-94fb-88b6cef0ca6e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Snowflake - Query on sensitive or restricted table",
+        "description": "'Detects query on sensitive or restricted table.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let r_tbl = dynamic(['table_name']);\nSnowflake\n| where QUERY_TYPE_s =~ 'SELECT'\n| where EXECUTION_STATUS_s =~ 'SUCCESS'\n| extend tbl = extract(@'(FROM|from)\\s(\\S+)\\s', 2, QUERY_TEXT_s)\n| where tbl in~ (r_tbl)\n| extend AccountCustomEntity = TargetUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1119"
+        ],
+        "alertRuleTemplateName": "f258fa0c-e26c-4e2b-94fb-88b6cef0ca6e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

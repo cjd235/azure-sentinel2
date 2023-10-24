@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ce171782-1643-4f21-bbb7-fa954b1e6897')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ce171782-1643-4f21-bbb7-fa954b1e6897')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "CiscoISE - Log collector was suspended",
+        "description": "'Detects when log collector was suspended.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lbtime = 10m;\nCiscoISEEvent\n| where TimeGenerated > ago(lbtime)\n| where EventId == '59207'\n| project TimeGenerated, SrcIpAddr, DstIpAddr\n| extend IPCustomEntity = DstIpAddr\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "alertRuleTemplateName": "ce171782-1643-4f21-bbb7-fa954b1e6897",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/73f23aa2-5cc4-4507-940b-75c9092e9e01')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/73f23aa2-5cc4-4507-940b-75c9092e9e01')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Corelight - Forced External Outbound SMB",
+        "description": "'Detects SMB requests that originate internally and communicate with an external IP address.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Corelight\n| where EventType =~ 'conn'\n| where ZeekConnLocalSrc == 'True'\n| where ZeekConnLocalDst == 'False'\n| where NetworkConnectionHistory hasprefix 'Sh' and NetworkApplication hasprefix 'smb'\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1187"
+        ],
+        "alertRuleTemplateName": "73f23aa2-5cc4-4507-940b-75c9092e9e01",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

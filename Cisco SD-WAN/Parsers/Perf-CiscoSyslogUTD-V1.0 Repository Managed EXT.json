@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(CiscoSyslogUTD')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "CiscoSyslogUTD",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "CiscoSyslogUTD",
+        "query": "let CiscoSyslogUTD_view = view() {\n    Syslog\n    | where SyslogMessage matches regex @\"\\[\\*\\*\\].*\\[\\*\\*\\].*\\[\\*\\*\\][^-]*.*->\"\n    | extend FieldList = extract_all(@\"]\\s(?P<action>[^\\s[]*)\\s\\[\\S*\\s[^{]*{(?P<protocol>[^\\s}]*)}\\s(?P<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(?P<src_port>\\d{1,5})\\s->\\s(?P<dest_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(?P<dest_port>\\d{1,5})\", dynamic(['action', 'protocol', 'src_ip', 'src_port', 'dest_ip', 'dest_port']), SyslogMessage)\n    | extend\n        Action = tostring(FieldList[0][0]),\n        Protocol = tostring(FieldList[0][1]),\n        SourceIP = tostring(FieldList[0][2]),\n        SourcePort = tostring(FieldList[0][3]),\n        DestinationIP = tostring(FieldList[0][4]),\n        DestinationPort = tostring(FieldList[0][5])\n    | extend UTDWebfilter = extract(@\"\\sUTD\\sWebFilter\\s(?P<utd_webfilter>[^\\s]*)\", 1, SyslogMessage)\n    | extend SignatureId = replace_string(extract(@\"\\[(?P<raw_signature_id>\\d+\\:\\d+)\\:\\d+\\]\",1,SyslogMessage),':','-')\n    | extend FileInspectionLogs = extract(@\"UTD\\sAMP\\sDISPOSITION\\s(?P<utd_amp_disposition>[^\\s]*)\\s\", 1, SyslogMessage)\n    | extend BracketData = SyslogMessage \n    | extend NonBracketData = SyslogMessage\n    | extend \n        EventVendor=\"CiscoSD-WAN\",\n        EventProduct=\"Syslog_UTD\"\n    | project\n        EventVendor,\n        EventProduct,\n        Host = HostName,\n        TimeGenerated = EventTime,\n        Action,\n        Protocol,\n        SourceIP,\n        SourcePort,\n        DestinationIP,\n        DestinationPort,\n        UTDWebfilter,\n        FileInspectionLogs,\n        BracketData,\n        NonBracketData,\n        SignatureId,\n        SyslogMessage\n    | parse-kv BracketData as (['Hostname'] : string, ['System_IP']: string, ['Instance_ID']: string, ['Classification']: string, ['Priority']: string, ['POLICY']: string, ['URL']: string, ['Category']: string, ['Reputation']: string) with (regex=@\"\\s\\[([^\\[\\]:]*):\\s([^\\]]*)\\]\")\n    | project-away BracketData\n    | parse-kv NonBracketData as (['SHA']: string, ['Malware']: string, ['Filename']: string, ['Filetype']: string) with (regex=@\"[\\s|\\{]([\\w.:\\/]+):\\s([\\w.]*)\")\n    | project-away NonBracketData\n};\nCiscoSyslogUTD_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

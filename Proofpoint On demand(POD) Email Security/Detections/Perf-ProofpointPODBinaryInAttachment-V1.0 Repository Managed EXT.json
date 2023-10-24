@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/eb68b129-5f17-4f56-bf6d-dde48d5e615a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/eb68b129-5f17-4f56-bf6d-dde48d5e615a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "ProofpointPOD - Binary file in attachment",
+        "description": "'Detects when email received with binary file as attachment.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lbtime = 10m;\nlet binaryTypes = dynamic(['zip', 'octet-stream', 'java-archive', 'rar', 'tar', 'x-7z-compressed', 'x-msdownload', 'portable-executable']);\nProofpointPOD\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'message'\n| where NetworkDirection == 'inbound'\n| where FilterDisposition !in ('reject', 'discard')\n| extend attachedMimeType = tostring(todynamic(MsgParts)[0]['detectedMime'])\n| where attachedMimeType has_any (binaryTypes)\n| project SrcUserUpn, AccountCustomEntity = tostring(parse_json(DstUserUpn)[0]), attachedMimeType, MsgHeaderSubject\n| extend Name = tostring(split(AccountCustomEntity, \"@\")[0]), UPNSuffix = tostring(split(AccountCustomEntity, \"@\")[1])\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "eb68b129-5f17-4f56-bf6d-dde48d5e615a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Name"
+              },
+              {
+                "identifier": "UPNSuffix",
+                "columnName": "UPNSuffix"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.3"
+      }
+    }
+  ]
+}

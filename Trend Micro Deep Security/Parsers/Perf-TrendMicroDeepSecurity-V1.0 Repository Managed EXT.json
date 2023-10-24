@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(TrendMicroDeepSecurity')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "TrendMicroDeepSecurity",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "TrendMicroDeepSecurity",
+        "query": "CommonSecurityLog\n| where DeviceVendor has_any (\"TrendMicro\", \"Trend Micro\")\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n         DeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3)\n| extend DeepSecurityHostID = DeviceCustomNumber1\n| extend DeepSecurityModuleName =\niff(toint(DeviceEventClassID) in (20,21,100,850,851,852,853,854),\"Firewall\",\niff(toint(DeviceEventClassID)>=1000000 and toint(DeviceEventClassID)<2000000,\"Intrusion Prevention\",\niff(toint(DeviceEventClassID)>=2000000 and toint(DeviceEventClassID)<3000000,\"Integrity Monitoring\",\niff(toint(DeviceEventClassID)>=3000000 and toint(DeviceEventClassID)<4000000,\"Log Inspection\",\niff(toint(DeviceEventClassID)>=4000000 and toint(DeviceEventClassID)<5000000,\"Anti-Malware\",\niff(toint(DeviceEventClassID)>=5000000 and toint(DeviceEventClassID)<6000000,\"Web Reputation\",\niff(toint(DeviceEventClassID)>=6000000 and toint(DeviceEventClassID)<7000000,\"Application Control\",\"System\")))))))\n| extend actionReason = iff(DeepSecurityModuleName == \"Application Control\", DeviceCustomString1, \"\")\n| extend sha1 = iff(DeepSecurityModuleName == \"Application Control\", DeviceCustomString2, \"\")\n| extend md5 = iff(DeepSecurityModuleName == \"Application Control\", DeviceCustomString3, \"\")\n| parse AdditionalExtensions with * \"target=\" target \";\" *\n| extend LIDescription = iff (DeepSecurityModuleName == \"Log Inspection\", DeviceCustomString1, \"\")\n| extend FragmentationBits = iff (DeepSecurityModuleName == \"Firewall\", DeviceCustomString3, \"\")\n| extend TCPFlags = iff (DeepSecurityModuleName == \"Firewall\" or DeepSecurityModuleName == \"Intrusion Prevention\", DeviceCustomString2, \"\")\n| extend InfectedResource = iff(DeepSecurityModuleName == \"Anti-Malware\", DeviceCustomString3, \"\")\n| extend ResourceType = iff(DeepSecurityModuleName == \"Anti-Malware\", DeviceCustomString4, \"\")\n| extend RiskLevel = iff(DeepSecurityModuleName == \"Anti-Malware\", DeviceCustomString5, \"\")\n| extend DPIStreamPosition = iff(DeepSecurityModuleName == \"Intrusion Prevention\", DeviceCustomString5, \"\")\n| extend DPIFlags = iff(DeepSecurityModuleName == \"Intrusion Prevention\", DeviceCustomString6, \"\")\n| extend DPIPacketPosition = iff(DeepSecurityModuleName == \"Intrusion Prevention\", DeviceCustomNumber3, 0)\n| where DeviceProduct startswith \"Deep Security\"\n| project-away DeviceCustomNumber1, DeviceCustomNumber1Label, DeviceCustomNumber2, DeviceCustomNumber2Label, DeviceCustomNumber3, DeviceCustomNumber3Label, DeviceCustomString1, DeviceCustomString1Label, DeviceCustomString2, DeviceCustomString2Label, DeviceCustomString3, DeviceCustomString3Label, DeviceCustomString4, DeviceCustomString4Label, DeviceCustomString5, DeviceCustomString5Label, DeviceCustomString6, DeviceCustomString6Label\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

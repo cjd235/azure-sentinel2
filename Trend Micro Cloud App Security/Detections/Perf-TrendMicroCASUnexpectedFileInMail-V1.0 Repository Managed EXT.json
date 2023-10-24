@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/201fd2d1-9131-4b29-bace-ce5d19f3e4ee')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/201fd2d1-9131-4b29-bace-ce5d19f3e4ee')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Trend Micro CAS - Unexpected file via mail",
+        "description": "'Detects when unexpected file recieved via mail.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let f_types = dynamic(['ps1', 'bat', 'scr', 'sh', 'exe', 'js', 'lnk']);\nTrendMicroCAS\n| where EventCategoryType in~ ('exchange', 'gmail', 'exchangeserver')\n| where isnotempty(SrcFileName)\n| extend file_type = extract(@'\\.(\\w+)$', 1, SrcFileName)\n| where file_type in~ (f_types)\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "201fd2d1-9131-4b29-bace-ce5d19f3e4ee",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

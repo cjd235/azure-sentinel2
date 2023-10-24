@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightBreaches')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightBreaches",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightBreaches",
+        "query": "let Breaches_view  = view () {\n    Breaches_data_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"Breaches\",\n                GUID = column_ifexists('guid_d', ''),\n                Date = column_ifexists('date_s', ''),\n                Severity = column_ifexists('Severity', ''),\n                Text = column_ifexists('text_s', ''),\n                DateCreated = column_ifexists('date_created_s', ''),\n                PreviwURL = column_ifexists('preview_url_s', ''),\n                EventType = column_ifexists('event_type_s', ''),\n                EventTypeDescription = column_ifexists('event_type_description_s', ''),\n                BreachedCompanies = column_ifexists('breached_companies_s', ''),\n                DependentCompanies = column_ifexists('dependent_companies_s', ''),\n                Companyname = column_ifexists('company_name_s', ''),\n                CompanyGUID = column_ifexists('company_guid_g', '')\n    | project\n                TimeGenerated,\n\t\t\t\tEventVendor,\n                EventProduct,\n                GUID,\n                Date,\n                Severity,\n                Text,\n                DateCreated,\n                PreviwURL,\n                EventType,\n                EventTypeDescription,\n                BreachedCompanies,\n                DependentCompanies,\n                Companyname,\n                CompanyGUID,\n                Type\n};\nBreaches_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ArmisActivities')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ArmisActivities",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ArmisActivities",
+        "query": "let ArmisActivities_view  = view () { \n    Armis_Activities_CL\n    | extend \n                EventVendor=\"ArmisActivities\",\n                EventProduct=\"ArmisActivities\",\n                ActivityUUID = column_ifexists('activityUUID_s', ''),\n                Content = column_ifexists('content_s', ''),\n                Protocol = column_ifexists('protocol_s', ''),\n                SensorName = column_ifexists('sensor_name_s', ''),\n                SensorType = column_ifexists('sensor_type_s', ''),\n                SiteLocation = column_ifexists('site_location_s', ''),\n                SiteName = column_ifexists('site_name_s', ''),\n                Time = column_ifexists('time_t', ''),\n                Title = column_ifexists('title_s', ''),\n                Type = column_ifexists('type_s', '')\n    | project\n                TimeGenerated,\n\t\t\t\tEventVendor,\n                EventProduct,\n                ActivityUUID,\n                Content,\n                Protocol,\n                SensorName,\n                SensorType,\n                SiteLocation,\n                SiteName,\n                Time,\n                Title,\n                Type\n};\nArmisActivities_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7a58b253-0ef2-4248-b4e5-c350f15a8346')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7a58b253-0ef2-4248-b4e5-c350f15a8346')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Excessive Denied Proxy Traffic",
+        "description": "'This alert creates an incident when a client generates an excessive amounts of denied proxy traffic.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let threshold = 100;\nSymantecProxySG\n| where sc_filter_result =~ \"DENIED\"\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), count() by c_ip, cs_host\n| where count_ > threshold\n| extend timestamp = StartTime, HostCustomEntity = cs_host, IPCustomEntity = c_ip\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "alertRuleTemplateName": "7a58b253-0ef2-4248-b4e5-c350f15a8346",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

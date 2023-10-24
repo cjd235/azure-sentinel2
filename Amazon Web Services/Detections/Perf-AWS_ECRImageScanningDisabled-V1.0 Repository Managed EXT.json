@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/19602494-94af-43c8-90ba-eb0e14999612')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/19602494-94af-43c8-90ba-eb0e14999612')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Automatic image scanning disabled for ECR",
+        "description": "'Image Scanning for ECR was disabled, which could lead to missing vulnerable container images in your environment. Attackers could disable the Image Scanning for defense evasion purposes.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "AWSCloudTrail\n| where EventName == \"PutImageScanningConfiguration\" and isempty(ErrorCode) and isempty(ErrorMessage)\n| extend scanOnPush = parse_json(tostring((parse_json(RequestParameters).imageScanningConfiguration))).scanOnPush\n| where scanOnPush == false\n| distinct TimeGenerated, EventName, SourceIpAddress, UserIdentityArn, UserIdentityUserName\n| extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))\n| extend timestamp = TimeGenerated, IPCustomEntity = SourceIpAddress, AccountCustomEntity = UserIdentityUserName\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562"
+        ],
+        "alertRuleTemplateName": "19602494-94af-43c8-90ba-eb0e14999612",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

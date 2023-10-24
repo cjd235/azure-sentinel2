@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GitHubDependabotData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GitHubDependabotData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GitHubDependabotData",
+        "query": "githubscanaudit_CL \n| where action_s in ('create', 'dismiss', 'resolve')\n| extend EventType='RepositoryVulnerabilityAlert'\n| extend alert = todynamic(alert_s),\n    organization = todynamic(organization_s),\n    repository = todynamic(repository_s),\n    sender = todynamic(sender_s) \n| extend alertcreatedate = alert.created_at, alertaffectedrange = alert.affected_range,   \n    alertexternalidentifier= alert.external_identifier,    \n    alertghsaid = alert.ghsa_id,\n    alertseverity = alert.severity,\n    repositoryfullname = repository.full_name,\n    repositoryOwnerlogin = repository.owner.login,\n    repositoryurl = repository.url,       \n    senderlogin = sender.login,\n    sendertype = sender.type,\n    action=action_s\n| where isnotempty(alertexternalidentifier)\n| project-keep\n    TimeGenerated,\n    EventType,\n    action,\n    alertexternalidentifier,\n    alertghsaid,\n    alertcreatedate,\n    repositoryfullname,\n    repositoryOwnerlogin,\n    repositoryurl,\n    senderlogin,\n    sendertype\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

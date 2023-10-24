@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(CiscoSecureEndpoint')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "CiscoSecureEndpoint",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "CiscoSecureEndpoint",
+        "query": "CiscoSecureEndpoint_CL\n| extend \n    EventVendor = 'Cisco',\n    EventProduct = 'Cisco Secure Endpoint'\n| project-rename \n    EventSubType = audit_log_type_s,\n    SrcUserName = audit_log_user_s,\n    DstMacAddr = computer_network_addresses_s,\n    DstHostname = computer_hostname_s,\n    DstUsername = computer_user_s,\n    DstIpAddr = computer_external_ip_s,\n    ConnectorGuid = connector_guid_g,\n    GroupGuid = group_guids_s,\n    DvcId = id_d,\n    EventOriginalId = event_type_id_d,\n    ThreatName = detection_s,\n    ThreatId = detection_id_s,\n    ThreatSeverity = severity_s,\n    DstDvcHostname = new_attributes_name_s,\n    DvcHostname = new_attributes_hostname_s,\n    DvcIpAddr = new_attributes_ip_external_s,\n    DstDvcOsId = new_attributes_operating_system_id_d,\n    EventProductVersion = new_attributes_product_version_id_d,\n    SrcDvcId = computer_connector_guid_g,\n    ComputerLinksComputer = computer_links_computer_s,\n    ComputerLinksTrajectory = computer_links_trajectory_s,\n    ComputerLinksGroup = computer_links_group_s,\n    IndicatorThreatType = file_disposition_s,\n    SrcFileName = file_file_name_s,\n    SrcFilePath = file_file_path_s,\n    SrcFileMD5 = file_identity_md5_g,\n    SrcFileSHA1 = file_identity_sha1_s,\n    SrcFileSHA256 = file_identity_sha256_s,\n    ParentProcessId = file_parent_process_id_d,\n    ParentProcessMD5 = file_parent_identity_md5_g,\n    ParentProcessSHA1 = file_parent_identity_sha1_s,\n    ParentProcessSHA256 = file_parent_identity_sha256_s,\n    ParentProcessName = file_parent_file_name_s,\n    ParentProcessFileDescription = file_parent_disposition_s\n| extend\n    EventEndTime=iff(isnotempty(created_at_t), created_at_t, date_t),\n    EventMessage=iff(isnotempty(event_s), event_s, event_type_s),\n    Hostname = DstHostname,\n    User = DstUsername\n| project-away \n    created_at_t,\n    date_t,\n    event_s,\n    event_type_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

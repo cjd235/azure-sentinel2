@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6098b34a-1e6b-440a-9e3b-fb4d5944ade1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6098b34a-1e6b-440a-9e3b-fb4d5944ade1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Palo Alto Prisma Cloud - Network ACLs Inbound rule to allow All Traffic",
+        "description": "'Detects Network ACLs with Inbound rule to allow All Traffic.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "PaloAltoPrismaCloud\n| where Reason =~ 'NEW_ALERT'\n| where Status =~ 'open'\n| where AlertMessage has 'Network ACLs with Inbound rule to allow All Traffic'\n| extend AccountCustomEntity = UserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1133"
+        ],
+        "alertRuleTemplateName": "6098b34a-1e6b-440a-9e3b-fb4d5944ade1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

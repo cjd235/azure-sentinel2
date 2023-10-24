@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/38e043ce-a1fd-497b-8d4f-ce5ca2db90cd')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/38e043ce-a1fd-497b-8d4f-ce5ca2db90cd')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Trend Micro CAS - Ransomware outbreak",
+        "description": "'Triggeres when ransomware was detected on several accounts.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TrendMicroCAS\n| where EventType =~ 'ransomware'\n| summarize count() by DstUserName, bin(TimeGenerated, 2m)\n| where count_ >= 2\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1486"
+        ],
+        "alertRuleTemplateName": "38e043ce-a1fd-497b-8d4f-ce5ca2db90cd",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

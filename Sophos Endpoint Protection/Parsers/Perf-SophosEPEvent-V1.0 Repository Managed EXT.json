@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SophosEPEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SophosEPEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SophosEPEvent",
+        "query": "SophosEP_CL\n| extend EventVendor = 'Sophos'\n| extend EventProduct = 'Endpoint Protection'\n| project-rename DstUserSid=user_id_s,\n    CustomerId=customer_id_g,\n    EventSeverity=severity_s,\n    Created=created_at_t,\n    SrcIpAddr=source_info_ip_s,\n    ThreatName=threat_s,\n    EndpointId=endpoint_id_g,\n    SrcDvcType=endpoint_type_s,\n    EventSubType=origin_s,\n    EventEndTime=when_t,\n    Source=source_s,\n    DvcAction=type_s,\n    EventMessage=name_s,\n    DvcHostname=location_s,\n    EventOriginalUid=id_g,\n    ThreatCategory=group_s,\n    EventType=datastream_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

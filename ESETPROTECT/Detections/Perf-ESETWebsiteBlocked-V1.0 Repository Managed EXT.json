@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7b84fc5b-9ffb-4e9b-945b-5d480e330b3f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7b84fc5b-9ffb-4e9b-945b-5d480e330b3f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Website blocked by ESET",
+        "description": "'Create alert on websites blocked by ESET.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "ESETPROTECT\n| where EventType == 'FilteredWebsites_Event'\n| extend SrcUserName, FilePath, DvcHostname, DvcIpAddr\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration",
+          "CommandAndControl",
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1041",
+          "T1071",
+          "T1189",
+          "T1566"
+        ],
+        "alertRuleTemplateName": "7b84fc5b-9ffb-4e9b-945b-5d480e330b3f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "SrcUserName"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DvcHostname"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "DvcIpAddr"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "FilePath"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

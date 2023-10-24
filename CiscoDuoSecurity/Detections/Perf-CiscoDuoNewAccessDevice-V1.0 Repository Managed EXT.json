@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f05271b6-26a5-49cf-ad73-4a202fba6eb6')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f05271b6-26a5-49cf-ad73-4a202fba6eb6')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco Duo - New access device",
+        "description": "'Detects new access device.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "CiscoDuo\n| where EventType =~ 'authentication'\n| where EventResult =~ 'success'\n| where isnotempty(AccessDvcIpAddr)\n| summarize dvc_ip = makeset(AccessDvcIpAddr) by DstUserName\n| join (CiscoDuo\n        | where EventType =~ 'authentication'\n        | where EventResult =~ 'success') on DstUserName\n| where dvc_ip !has AccessDvcIpAddr\n| extend IPCustomEntity = AccessDvcIpAddr, AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "f05271b6-26a5-49cf-ad73-4a202fba6eb6",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

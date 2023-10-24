@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Zoom')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Zoom",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Zoom",
+        "query": "let Zoom_dates_report_view = view () {\n    Zoom_CL \n    | where event_type_s == \"dates\"\n    | summarize arg_max(TimeGenerated, *) by date_s\n};\nlet Zoom_other_reports_view = view () {\n    Zoom_CL \n    | where event_type_s != \"dates\"\n};\nlet Zoom_all_reports_view = view () { \n    union isfuzzy=true Zoom_dates_report_view, Zoom_other_reports_view\n    | extend\n    \t\t\tDate=column_ifexists('date_s', ''),\n    \t\t\tEventDay=column_ifexists('date_s', ''),\n    \t\t\tNewUsersCount=column_ifexists('new_users_d', ''),\n    \t\t\tMeetingsCount=column_ifexists('meetings_d', ''),\n    \t\t\tParticipantsCount=column_ifexists('participants_d', ''),\n    \t\t\tMeetingMinutes=column_ifexists('meeting_minutes_d', ''),\n    \t\t\tEventType=column_ifexists('event_type_s', ''),\n    \t\t\tEventName=column_ifexists('event_name_s', ''),\n    \t\t\tEventMessage=column_ifexists('event_name_s', ''),\n    \t\t\tId=column_ifexists('id_s', ''),\n    \t\t\tUserIdentity=column_ifexists('id_s', ''),\n    \t\t\tEmail=column_ifexists('email_s', ''),\n    \t\t\tUserEmail=column_ifexists('email_s', ''),\n    \t\t\tUserName=column_ifexists('user_name_s', ''),\n    \t\t\tUserType=column_ifexists('type_d', ''),\n    \t\t\tDept=column_ifexists('dept_s', ''),\n    \t\t\tDepartment=column_ifexists('dept_s', ''),\n    \t\t\tLastClientVersion=column_ifexists('last_client_version_s', ''),\n    \t\t\tDvcModelNumber=column_ifexists('last_client_version_s', ''),\n    \t\t\tEventEndTime=column_ifexists('last_login_time_t', ''),\n    \t\t\tLastLoginTime=column_ifexists('last_login_time_t', ''),\n    \t\t\tCreateTime=column_ifexists('create_time_t', ''),\n    \t\t\tEventCreationTime=column_ifexists('create_time_t', ''),\n    \t\t\tUsage=column_ifexists('usage_s', ''),\n    \t\t\tPlanUsage=column_ifexists('plan_usage_s', ''),\n    \t\t\tFreeUsage=column_ifexists('free_usage_s', ''),\n    \t\t\tTime=column_ifexists('time_t', ''),\n    \t\t\tEventOriginalTime=column_ifexists('time_t', ''),\n    \t\t\tOperator=column_ifexists('operator_s', ''),\n    \t\t\tCategoryType=column_ifexists('category_type_s', ''),\n    \t\t\tAction=column_ifexists('action_s', ''),\n    \t\t\tEventOriginalMessage=column_ifexists('operation_detail_s', ''),\n    \t\t\tOperationDetail=column_ifexists('operation_detail_s', ''),\n    \t\t\tEventResult=column_ifexists('type_s', ''),\n    \t\t\tIpAddress=column_ifexists('ip_address_s', ''),\n    \t\t\tSrcIpAddr=column_ifexists('ip_address_s', ''),\n    \t\t\tClientType=column_ifexists('client_type_s', ''),\n    \t\t\tSrcDvcModelName=column_ifexists('client_type_s', ''),\n    \t\t\tSrcDvcModelNumber=column_ifexists('version_s', ''),\n    \t\t\tVersion=column_ifexists('version_s', ''),\n    \t\t\tEventVendor=\"Zoom\",\n                EventProduct=\"Zoom Reports\"\n    | project\n                TimeGenerated, \n                EventVendor,\n                EventProduct,\n                Date,\n    \t\t\tEventDay,\n    \t\t\tNewUsersCount,\n    \t\t\tMeetingsCount,\n    \t\t\tParticipantsCount,\n    \t\t\tMeetingMinutes,\n    \t\t\tEventType,\n    \t\t\tEventName,\n    \t\t\tEventMessage,\n    \t\t\tId,\n    \t\t\tUserIdentity,\n    \t\t\tEmail,\n    \t\t\tUserEmail,\n    \t\t\tUserName,\n    \t\t\tUserType,\n    \t\t\tDept,\n    \t\t\tDepartment,\n    \t\t\tLastClientVersion,\n    \t\t\tDvcModelNumber,\n    \t\t\tEventEndTime,\n    \t\t\tLastLoginTime,\n    \t\t\tCreateTime,\n    \t\t\tEventCreationTime,\n    \t\t\tUsage,\n    \t\t\tPlanUsage,\n    \t\t\tFreeUsage,\n    \t\t\tTime,\n    \t\t\tEventOriginalTime,\n    \t\t\tOperator,\n    \t\t\tCategoryType,\n    \t\t\tAction,\n    \t\t\tEventOriginalMessage,\n    \t\t\tOperationDetail,\n    \t\t\tEventResult,\n    \t\t\tIpAddress,\n    \t\t\tSrcIpAddr,\n    \t\t\tClientType,\n    \t\t\tSrcDvcModelName,\n    \t\t\tSrcDvcModelNumber,\n    \t\t\tVersion\n};\nZoom_all_reports_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(CGFWFirewallActivity')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "CGFWFirewallActivity",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "CGFWFirewallActivity",
+        "query": "Syslog\n| where ProcessName == \"box_Firewall_Activity\"\n| extend Type = extract(\"type=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, L4Protocol = extract(\"proto=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, SourceInterface = extract(\"srcIF=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, SourceIP = extract(\"srcIP=([\\\\d\\\\.]+)\",1,SyslogMessage)\n, SourcePort = extract(\"srcPort=([\\\\d\\\\s]+)\",1,SyslogMessage)\n, SourceMAC = extract(\"srcMAC=([\\\\w\\\\d:]+)\",1,SyslogMessage)\n, DestinationIP = extract(\"dstIP=([\\\\d\\\\.]+)\",1,SyslogMessage)\n, DestinationPort = extract(\"dstPort=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, DestinationService = extract(\"dstService=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, DestinationInterface = extract(\"dstIF=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, FirewallRule = extract(\"rule=([\\\\w\\\\s\\\\-]+)\",1,SyslogMessage)\n, Info = extract(\"info=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, SourceNAT = extract(\"srcNAT=([\\\\d\\\\.]+)\",1,SyslogMessage)\n, DestinationNAT = extract(\"dstNAT=([\\\\d\\\\.]+)\",1,SyslogMessage)\n, Duration = extract(\"duration=([\\\\d]+)\",1,SyslogMessage)\n, Count = extract(\"count=([\\\\d]+)\",1,SyslogMessage)\n, ReceivedBytes = extract(\"receivedBytes=([\\\\d]+)\",1,SyslogMessage)\n, SentBytes = extract(\"sentBytes=([\\\\d]+)\",1,SyslogMessage)\n, ReceivedPackets = extract(\"receivedPackets=([\\\\d]+)\",1,SyslogMessage)\n, SentPackets = extract(\"sentPackets=([\\\\d]+)\",1,SyslogMessage)\n, User = extract(\"user=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, L7Protocol = extract(\"protocol=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, Application = extract(\"application=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, Target = extract(\"target=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, Content = extract(\"content=([\\\\w\\\\s]+)\",1,SyslogMessage)\n, URLCategory = extract(\"urlcat=([\\\\w\\\\s]+)\",1,SyslogMessage)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

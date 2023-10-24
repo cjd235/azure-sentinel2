@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/5f37de91-ff2b-45fb-9eda-49e9f76a3942')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/5f37de91-ff2b-45fb-9eda-49e9f76a3942')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Sentinel One - Alert from custom rule",
+        "description": "'Detects when alert from custom rule received.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "SentinelOne\n| where ActivityType == 3608\n| extend RuleName = extract(@'Custom Rule:\\s(.*?)\\sin Group', 1, EventOriginalMessage)\n| extend DstHostname = extract(@'detected on\\s(\\S+)\\.', 1, EventOriginalMessage)\n| extend HostCustomEntity = DstHostname\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "alertRuleTemplateName": "5f37de91-ff2b-45fb-9eda-49e9f76a3942",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

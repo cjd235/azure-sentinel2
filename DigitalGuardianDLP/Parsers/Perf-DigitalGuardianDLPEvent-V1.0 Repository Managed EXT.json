@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DigitalGuardianDLPEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DigitalGuardianDLPEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DigitalGuardianDLPEvent",
+        "query": "Syslog\n| where SyslogMessage contains 'managed_device_id' and SyslogMessage contains 'number_of_incidents'\n| mv-apply ExtractedFields = extract_all(@'\\s(?P<key>[a-zA-Z0-9-_]+)=\\\"?(?P<value>[a-zA-Z0-9-_:/@.,#{}>< ]+)\\\"?', dynamic([\"key\",\"value\"]), SyslogMessage) on (\n    project packed = pack(tostring(ExtractedFields[0]), tostring(ExtractedFields[1]))\n    | summarize bag = make_bag(packed)\n)\n| evaluate bag_unpack(bag)\n| extend EventEndTime=todatetime(timestamp)\n| project-away timestamp\n| project-rename DvcAvtion=action_taken\n                , DstUserName=destination\n                , DstIpAddr=destination_ip\n                , DstPortNumber=destination_port\n                , IncidentId=incident_id\n                , IncidentStatus=incident_status\n                , IncidentsUrl=incidents_url\n                , MatchedPolicies=matched_policies_by_severity\n                , EventCount=number_of_incidents\n                , NetworkApplicationProtocol=protocol\n                , SrcUserName=source\n                , SrcIpAddr=source_ip\n                , SrcPortNumber=source_port\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

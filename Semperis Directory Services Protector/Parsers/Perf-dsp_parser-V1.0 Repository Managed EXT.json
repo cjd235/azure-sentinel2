@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(dsp_parser')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "dsp_parser",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "dsp_parser",
+        "query": "Event\n| where Source == \"Semperis-DSP-Security\"\n| where EventID in (\"9211\",\"9212\",\"9208\")\n| parse EventData with \n    '<DataItem type=\"' EventDataType \n    '\" time=\"' EventDataTime \n    '\" sourceHealthServiceId=\"' EventDataSourceHealthServiceId \n    '\"><EventData ' * '>' DSPData '</EventData></DataItem>'\n| parse DSPData with \n    *\n    '<Data Name=\"firstFound\">' FirstFound '</Data>'\n    * \n| parse DSPData with \n    '<Data Name=\"generationTime\">' GenerationTime '</Data>'\n    '<Data Name=\"securityIndicatorName\">' SecurityIndicatorName '</Data>'\n\t'<Data Name=\"result\">' Result '</Data>' \n    *\n\t'<Data Name=\"score\">' Score '</Data>'\n\t'<Data Name=\"forestName\">' ForestName '</Data>'\n\t'<Data Name=\"domains\">' Domains '</Data>'\n\t'<Data Name=\"severity\">' Severity '</Data>'\n\t'<Data Name=\"weight\">' Weight '</Data>'\n\t'<Data Name=\"securityFrameworkTags\">' SecurityFrameworkTags '</Data>'\n\t'<Data Name=\"securityIndicatorDescription\">' SecurityIndicatorDescription '</Data>'\n\t'<Data Name=\"likelihoodOfCompromise\">' LikelihoodOfCompromise '</Data>'\n\t'<Data Name=\"resultMessage\">' ResultMessage '</Data>'\n\t'<Data Name=\"numberOfResults\">' NumberOfResults '</Data>'\n\t'<Data Name=\"remediation\">' Remediation '</Data>'\n\t'<Data Name=\"schedule\">' Schedule '</Data>'\n    * \n| extend SecurityFrameworkTagsCsv = replace(@' Mitre:', @'', tostring(SecurityFrameworkTags))\n| extend SecurityFrameworkTagsCsv = replace(@'Mitre:', @'', tostring(SecurityFrameworkTagsCsv))\n| extend SecurityFrameworkTags = replace(@'Mitre:', @'', tostring(SecurityFrameworkTags))\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

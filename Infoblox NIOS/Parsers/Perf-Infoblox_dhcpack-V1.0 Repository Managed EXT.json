@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcpack')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcpack",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcpack",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nSyslog\n    | where Computer in (datasource) \n    | where SyslogMessage startswith_cs \"DHCPACK\"\n    | extend Parser = extract_all(@\"^([^\\s]+)\\s(?:on\\s([\\d\\.]+)\\s)?(?:to\\s([^\\s]+)(?:\\s\\(([^\\)]+)\\))?)(?:\\svia\\s([^\\s]+))?(?:\\srelay\\s([^\\s]+))?(?:\\slease-duration\\s([\\d]+))?(?:\\s\\(([^\\)]+)\\))?(?:\\suid\\s([^\\s]+))?\", dynamic([1,2,3,4,5,6,7,8,9]), SyslogMessage)[0]\n    | extend responseTime = EventTime,\n            Log_Type = tostring(Parser[0]),\n            IPAddress = tostring(Parser[1]), \n            SrcMacAddr = tostring(Parser[2]),\n            SrcHostname = tostring(Parser[3]),\n            Interface = tostring(Parser[4]),\n            Relay = tostring(Parser[5]), \n            LeaseDuration = tostring(Parser[6]),\n            State = tostring(Parser[8])\n    | project-away Parser\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

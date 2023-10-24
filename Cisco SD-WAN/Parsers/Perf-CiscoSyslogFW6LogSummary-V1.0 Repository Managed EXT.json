@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(CiscoSyslogFW6LogSummary')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "CiscoSyslogFW6LogSummary",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "CiscoSyslogFW6LogSummary",
+        "query": "let CiscoSyslogFW6LogSummary_view = view() {\n    Syslog\n    | where SyslogMessage has \"%FW-6-LOG_SUMMARY:\"\n    | extend FieldList = extract_all(@\"\\S{3}\\s+\\d{1,2}\\s[^\\s]+\\s%(?P<type>[^:\\s]+).*TS:\\d+\\s%(?P<sub_type>[^:\\s]+)[^\\d]+(?P<packets>\\d+)\\s(?P<protocol>\\w+).*\\s(?P<action>\\w+)\\sfrom\\s[^\\s]+\\s(?P<src_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(?P<src_port>\\d{1,5})[^\\d]+(?P<dest_ip>\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}):(?P<dest_port>\\d{1,5}).*\\(target:class\\)-\\((?P<target>[^\\s\\)\\(:]+)\\:(?P<class>[^\\s\\:\\)]+)\", dynamic(['type', 'sub_type', 'packets', 'protocol', 'action', 'src_ip', 'src_port', 'dest_ip', 'dest_port', 'target', 'class']), SyslogMessage)\n    | extend\n        SyslogType = tostring(FieldList[0][0]),\n        SyslogSubType = tostring(FieldList[0][1]),\n        Packets = tostring(FieldList[0][2]),\n        Protocol = tostring(FieldList[0][3]),\n        Action = tostring(FieldList[0][4]),\n        SourceIP = tostring(FieldList[0][5]),\n        SourcePort = tostring(FieldList[0][6]),\n        DestinationIP = tostring(FieldList[0][7]),\n        DestinationPort = tostring(FieldList[0][8]),\n        SyslogTarget = tostring(FieldList[0][9]),\n        SyslogClass = tostring(FieldList[0][10])\n    | extend \n        EventVendor=\"CiscoSD-WAN\",\n        EventProduct=\"Syslog_FW-6-LOG_SUMMARY\"\n    | project \n        EventVendor,\n        EventProduct,\n        Host = HostName,\n        TimeGenerated=EventTime,\n        SyslogType,\n        SyslogSubType,\n        Packets,\n        Protocol,\n        Action,\n        SourceIP,\n        SourcePort,\n        DestinationIP,\n        DestinationPort,\n        SyslogTarget,\n        SyslogClass,\n        SyslogMessage\n};\nCiscoSyslogFW6LogSummary_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

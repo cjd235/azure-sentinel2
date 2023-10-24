@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9b61a945-ebcb-4245-b6e4-51f3addb5248')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9b61a945-ebcb-4245-b6e4-51f3addb5248')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco WSA - Unscannable file or scan error",
+        "description": "'Detects unscanned downloaded file.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "CiscoWSAEvent\n| where isnotempty(AmpFileName)\n| where AmpScanningVerdict in ('2', '3')\n| extend IPCustomEntity = SrcIpAddr, FileCustomEntity = AmpFileName, AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1189"
+        ],
+        "alertRuleTemplateName": "9b61a945-ebcb-4245-b6e4-51f3addb5248",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "FileCustomEntity"
+              }
+            ],
+            "entityType": "File"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

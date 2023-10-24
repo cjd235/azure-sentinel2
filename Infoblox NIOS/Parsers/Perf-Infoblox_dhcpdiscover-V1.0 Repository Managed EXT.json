@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcpdiscover')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcpdiscover",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcpdiscover",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nSyslog\n    | where Computer in (datasource) \n    | where SyslogMessage startswith_cs \"DHCPDISCOVER\"\n    | extend responseTime = EventTime\n    | extend Parser = extract_all(@\"^(\\w+)\\sfrom\\s([a-z0-9\\:]+)(?:\\s\\(([^\\)]+)\\)|)(?:\\svia\\s([^\\s\\:]+[^\\:\\s]))(?:\\sTransID\\s([^\\s\\:]+)?)?(?:\\suid\\s([\\S]+))?(?:\\:?\\snetwork\\s([^\\s\\:]+)?)?(:?\\:\\s(.*))?\", dynamic([1,2,3,4,5,6,7,8,9,10]), SyslogMessage)[0]\n    | extend Log_Type = tostring(Parser[0]),\n        SrcMacAddr = tostring(Parser[1]), \n        SrcHostName = tostring(Parser[2]), \n        SrcRouterAddress = tostring(Parser[3]), \n        DhcpSessionId = tostring(Parser[4]),\n        SrcUserIdType = tostring(Parser[5]), \n        Network = tostring(Parser[6]),\n        EventMessage = tostring(Parser[8])\n    | project-away SrcHostName,SrcRouterAddress,Parser;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

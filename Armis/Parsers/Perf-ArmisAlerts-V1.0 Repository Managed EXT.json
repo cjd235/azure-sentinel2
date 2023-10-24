@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ArmisAlerts')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ArmisAlerts",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ArmisAlerts",
+        "query": "let ArmisAlerts_view  = view () { \n    Armis_Alerts_CL\n    | extend \n                EventVendor=\"ArmisAlerts\",\n                EventProduct=\"ArmisAlerts\",\n                ActivityUUIDs = column_ifexists('activityUUIDs_s', ''),\n                AlertId = column_ifexists('alertId_d', ''),\n                Description = column_ifexists('description_s', ''),\n                DeviceIds = column_ifexists('deviceIds_s', ''),\n                Severity = column_ifexists('severity_s', ''),\n                Status = column_ifexists('status_s', ''),\n                Time = column_ifexists('time_t', ''),\n                Title = column_ifexists('title_s', ''),\n                Type = column_ifexists('type_s', '')\n    | project\n                TimeGenerated,\n\t\t\t\tEventVendor,\n                EventProduct,\n                ActivityUUIDs,\n                AlertId,\n                Description,\n                DeviceIds,\n                Severity,\n                Status,\n                Time,\n                Title,\n                Type\n};\nArmisAlerts_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

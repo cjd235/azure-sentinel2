@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/39a0995e-f4a9-4869-a0ae-36d6d9049bfd')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/39a0995e-f4a9-4869-a0ae-36d6d9049bfd')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "OracleDBAudit - User connected to database from new IP",
+        "description": "'Detects when a user connects to database from new IP address.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let lbtime_d = 14d;\nlet lbtime_24h = 24h;\nOracleDatabaseAuditEvent\n| where TimeGenerated between (ago(lbtime_d) .. ago(lbtime_24h))\n| where isnotempty(SrcIpAddr)\n| where isnotempty(DstUserName)\n| summarize knownIPs = make_set(SrcIpAddr) by DstUserName\n| join (OracleDatabaseAuditEvent\n      | where isnotempty(SrcIpAddr)\n      | where isnotempty(DstUserName)\n      | where DbAction =~ 'connect'\n      ) on DstUserName\n| where knownIPs !contains SrcIpAddr\n| project DstUserName, SrcIpAddr\n| extend AccountCustomEntity = DstUserName\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "39a0995e-f4a9-4869-a0ae-36d6d9049bfd",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

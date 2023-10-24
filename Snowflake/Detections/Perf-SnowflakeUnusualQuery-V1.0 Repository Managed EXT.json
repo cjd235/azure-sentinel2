@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1dd1d9e5-3ebf-43cb-be07-6082d5eabe79')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1dd1d9e5-3ebf-43cb-be07-6082d5eabe79')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Snowflake - Unusual query",
+        "description": "'Detects unusual query.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Snowflake\n| where QUERY_TYPE_s =~ 'SELECT'\n| where EXECUTION_STATUS_s =~ 'SUCCESS'\n| where QUERY_TEXT_s startswith @'SELECT *'\n| extend AccountCustomEntity = TargetUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1119"
+        ],
+        "alertRuleTemplateName": "1dd1d9e5-3ebf-43cb-be07-6082d5eabe79",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

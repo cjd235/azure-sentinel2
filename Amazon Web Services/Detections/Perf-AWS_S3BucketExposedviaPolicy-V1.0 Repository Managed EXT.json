@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/44a5b65e-b0a9-4591-aabc-388fd92a28c4')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/44a5b65e-b0a9-4591-aabc-388fd92a28c4')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "S3 bucket exposed via policy",
+        "description": "'Detected S3 bucket publicly exposed via policy, this could lead for sensitive information leakage to the public. Verify the S3 object configurations.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "AWSCloudTrail\n| where EventName == \"PutBucketPolicy\" and isempty(ErrorCode) and isempty(ErrorMessage)\n| extend Statement = parse_json(tostring((parse_json(RequestParameters).bucketPolicy))).Statement\n| mvexpand Statement\n| extend Action = parse_json(Statement).Action , Effect = tostring(parse_json(Statement).Effect), Resource = tostring(parse_json(Statement).Resource), Condition = tostring(parse_json(Statement).Condition), Principal_aws = tostring(parse_json(Statement).Principal.AWS), Principal = tostring(parse_json(Statement).Principal)\n| extend Action = tostring(Action)\n| where Effect =~ \"Allow\" and (Principal_aws == \"*\" or Principal == \"*\") and isempty(Condition)\n| distinct TimeGenerated, EventName, SourceIpAddress, UserIdentityArn, UserIdentityUserName\n| extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))\n| extend timestamp = TimeGenerated, IPCustomEntity = SourceIpAddress, AccountCustomEntity = UserIdentityUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1537"
+        ],
+        "alertRuleTemplateName": "44a5b65e-b0a9-4591-aabc-388fd92a28c4",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

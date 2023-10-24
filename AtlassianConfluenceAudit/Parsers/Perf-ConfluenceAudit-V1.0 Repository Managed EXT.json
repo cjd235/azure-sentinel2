@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ConfluenceAudit')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ConfluenceAudit",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ConfluenceAudit",
+        "query": "let Confluence_Audit_view  = view () { \n    Confluence_Audit_CL\n    | extend \n                EventVendor=\"Atlassian\",\n                EventProduct=\"Confluence\",\n                AuthorUsername=column_ifexists('author_username_s', ''),\n\t\t        AuthorUserKey=column_ifexists('author_userKey_g', ''),\n                AuthorAccountId=column_ifexists('author_accountId_s', ''),\n                AuthorType=column_ifexists('author_type_s', ''),\n                AuthorDisplayName=column_ifexists('author_displayName_s', ''),\n                AuthorIsExternalCollaborator=column_ifexists('author_isExternalCollaborator_b', ''),\n                AuthorAccountType=column_ifexists('author_accountType_s', ''),\n                AuthorPublicName=column_ifexists('author_publicName_s', ''),\n                AuthorExternalCollaborator=column_ifexists('author_externalCollaborator_b', ''),\n                RemoteAddress=column_ifexists('remoteAddress_s', ''),\n                CreationDate=column_ifexists('creationDate_d', ''),\n                Summary=column_ifexists('summary_s', ''),\n                Description=column_ifexists('description_s', ''),\n                Category=column_ifexists('Category', ''),\n                SysAdmin=column_ifexists('sysAdmin_b', ''),\n                SuperAdmin=column_ifexists('superAdmin_b', ''),\n                AffectedObjectName=column_ifexists('affectedObject_name_s', ''),\n                AffectedObjectObjectType=column_ifexists('affectedObject_objectType_s', ''),\n                ChangedValues=column_ifexists('changedValues_s', ''),\n                AssociatedObjects=column_ifexists('associatedObjects_s', ''),\n                UserIdentity=column_ifexists('author_accountId_s', ''),\n                SrcUserName=column_ifexists('author_displayName_s', ''),\n                DstUserSid=column_ifexists('author_userKey_s', ''),\n                SrcIpAddr=column_ifexists('remoteAddress_s', ''),\n                EventCreationTime=column_ifexists('creationDate_d', ''),\n                EventMessage=column_ifexists('summary_s', ''),\n                EventCategoryType =column_ifexists('Category', '')             \n    | project\n                TimeGenerated, \n                EventVendor,\n                EventProduct,\n                AuthorUsername,\n                AuthorAccountId,\n                AuthorType,\n                AuthorDisplayName,\n                AuthorIsExternalCollaborator,\n                AuthorUserKey,\n                AuthorAccountType,\n                AuthorPublicName,\n                AuthorExternalCollaborator,\n                RemoteAddress,\n                CreationDate,\n                Summary,\n                Description,\n                Category,\n                SysAdmin,\n                SuperAdmin,\n                AffectedObjectName,\n                AffectedObjectObjectType,\n                ChangedValues,\n                AssociatedObjects,\n                UserIdentity,\n                SrcUserName,\n                DstUserSid,\n                SrcIpAddr,\n                EventCreationTime,\n                EventMessage,\n                EventCategoryType               \n};\nConfluence_Audit_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

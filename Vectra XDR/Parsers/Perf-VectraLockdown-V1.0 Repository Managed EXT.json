@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VectraLockdown')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VectraLockdown",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VectraLockdown",
+        "query": "let VectraLockdown_view  = view () { \n    Lockdown_Data_CL\n    | extend\n        EventVendor=\"VectraLockdown\",\n        EventProduct=\"VectraLockdown\",\n        ID = column_ifexists('id_d', ''),\n        [\"Entity ID\"] = column_ifexists('entity_id_d', ''),\n        [\"Entity Name\"] = column_ifexists('entity_name_s', ''),\n        [\"Entity Type\"] = column_ifexists('entity_type_s ', ''),\n        Type = column_ifexists('type_s', ''),\n        [\"Locked Date\"] = column_ifexists('lock_event_timestamp_t', ''),\n        [\"Unlock Date\"] = column_ifexists('unlock_event_timestamp_t', ''),\n        [\"Locked By\"] = column_ifexists('locked_by_s', '')\n    | project\n        TimeGenerated,\n        EventVendor,\n        EventProduct,\n        ID,\n        [\"Entity ID\"],\n        [\"Entity Name\"],\n        [\"Entity Type\"],\n        Type,\n        [\"Locked Date\"],\n        [\"Unlock Date\"],\n        [\"Locked By\"]\n};\nVectraLockdown_view()\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

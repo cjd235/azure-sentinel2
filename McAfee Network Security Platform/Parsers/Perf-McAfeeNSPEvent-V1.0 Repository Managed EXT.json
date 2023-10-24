@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(McAfeeNSPEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "McAfeeNSPEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "McAfeeNSPEvent",
+        "query": "Syslog\n| where ProcessName == \"SyslogAlertForwarderNSP\"\n| extend EventVendor = 'McAfee'\n| extend EventProduct = 'Network Security Manager'\n| extend EventData = split(SyslogMessage, \"|\") \n| extend EventOriginalUid = EventData[1]\n| extend EventType = EventData[2]\n| extend EventEndTime = EventData[3]\n| extend ThreatName = EventData[4]\n| extend ThreatId = EventData[5]\n| extend EventSeverity = EventData[6]\n| extend SignatureId = EventData[7]\n| extend AlertConfidence = EventData[8]\n| extend DvcDomain = EventData[9]\n| extend DvcHostname = EventData[10]\n| extend DvcInboundInterface = EventData[11]\n| extend SrcIpAddr = EventData[12]\n| extend SrcPortNumber = EventData[13]\n| extend DstIpAddr = EventData[14]\n| extend DstPortNumber = EventData[15]\n| extend EventSubType = EventData[16]\n| extend Application = EventData[17]\n| extend NetworkDirection = EventData[18]\n| extend DvcAction = EventData[19]\n| extend DetectionMechanism = EventData[20]\n| extend ApplicationProtocol = EventData[21]\n| extend NetworkProtocol = EventData[22]\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

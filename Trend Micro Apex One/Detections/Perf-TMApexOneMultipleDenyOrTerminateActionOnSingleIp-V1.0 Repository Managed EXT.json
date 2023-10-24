@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/cd94e078-67b7-11ec-90d6-0242ac120003')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/cd94e078-67b7-11ec-90d6-0242ac120003')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "ApexOne - Multiple deny or terminate actions on single IP",
+        "description": "'Detects multiple deny or terminate actions on single IP.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let threshold = 5;\nTMApexOneEvent\n| where EventMessage has \"Behavior Monitoring\"\n| where DvcAction == 2 or DvcAction == 3\n| summarize count() by SrcIpAddr, bin(TimeGenerated, 10m)\n| where count_ > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190"
+        ],
+        "alertRuleTemplateName": "cd94e078-67b7-11ec-90d6-0242ac120003",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

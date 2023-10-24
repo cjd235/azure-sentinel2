@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/ac76d9c0-17a3-4aaa-a341-48f4c0b1c882')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/ac76d9c0-17a3-4aaa-a341-48f4c0b1c882')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Palo Alto Prisma Cloud - IAM Group with Administrator Access Permissions",
+        "description": "'Detects IAM Groups with Administrator Access Permissions.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "PaloAltoPrismaCloud\n| where Reason =~ 'NEW_ALERT'\n| where Status =~ 'open'\n| where AlertMessage has 'IAM Groups with Administrator Access Permissions'\n| extend AccountCustomEntity = UserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "ac76d9c0-17a3-4aaa-a341-48f4c0b1c882",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

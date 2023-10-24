@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b6d54840-51d3-11ec-bf63-0242ac130002')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b6d54840-51d3-11ec-bf63-0242ac130002')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "PaloAlto - Possible attack without response",
+        "description": "'Detects possible attack without response.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "PaloAltoCDLEvent\n| where EventResourceId =~ 'THREAT'\n| where DvcAction !has \"block\" or DvcAction !has \"override\" or DvcAction !has \"deny\"\n| extend AccountCustomEntity = DstUsername, IPCustomEntity = SrcIpAddr, UrlCustomEntity = Url\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "b6d54840-51d3-11ec-bf63-0242ac130002",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(MarkLogicAudit')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "MarkLogicAudit",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "MarkLogicAudit",
+        "query": "let EventData = MarkLogicAudit_CL\n| extend EventVendor = 'MarkLogic',\n         EventProduct = 'MarkLogic Audit',\n         EventCount = 1;\nlet auditlog = EventData\n| where RawData has 'event='\n| mv-apply AdditionalFields = extract_all(@'(?P<key>[a-zA-Z]+)=(?P<value>[a-zA-Z0-9-_:/@.,#{}><\" ]+)', dynamic([\"key\",\"value\"]), RawData) on (\n    project packed1 = pack(tostring(AdditionalFields[0]), tostring(AdditionalFields[1]))\n    | summarize bag = make_bag(packed1)\n)\n| evaluate bag_unpack(bag)\n| extend EventResult = case(success=true, 'Success', 'Failure')\n| project-rename Change=change\n                ,Database=database\n                ,EventType=event\n                ,Expr=expr\n                ,File=file\n                ,Function=function\n                ,Roles=roles\n                ,EventSubType=type\n                ,UrlOriginal=uri\n                ,ActorUsername=user\n| project-away success\n               ,RawData;\nlet acceslog = EventData\n| where RawData matches regex @\"\\A(\\d+\\.\\d+\\.\\d+\\.\\d+|[0-9a-f:]{39}|::1|::)\"\n| extend EventType = 'AccessLog'\n| extend EventData = split(RawData, '\"')\n| extend SubEventData0 = split(trim_start(@' ', (trim_end(@' ', tostring(EventData[0])))), ' ')\n| extend SubEventData1 = split(EventData[1], ' ')\n| extend SubEventData2 = split(trim_start(@' ', (trim_end(@' ', tostring(EventData[2])))), ' ')\n| extend SrcIpAddr = tostring(SubEventData0[0])\n| extend ClientIdentity = SubEventData0[1]\n| extend SrcUserName = SubEventData0[2]\n| extend EventStartTime = todatetime(replace_regex(replace_regex(tostring(extract(@'\\[(.*?)\\]', 1, RawData)), @'(\\d{2}\\/\\w{3}\\/\\d{4}):(\\d{2}\\:\\d{2}\\:\\d{2})', @'\\1 \\2'), @'(\\d{2})\\/(\\w{3})\\/(\\d{4})\\s(\\d{2}\\:\\d{2}\\:\\d{2})', @'\\1-\\2-\\3 \\4'))\n| extend HttpRequestMethod = SubEventData1[0]\n| extend UrlOriginal = SubEventData1[1]\n| extend HttpVersion = SubEventData1[2]\n| extend HttpStatusCode = SubEventData2[0]\n| extend HttpResponseBodyBytes = SubEventData2[1]\n| extend HttpReferrerOriginal = EventData[3]\n| extend HttpUserAgentOriginal = EventData[5]\n| project-away SubEventData0\n               ,SubEventData1\n               ,SubEventData2\n               ,EventData\n               ,RawData;\nlet errorlog = EventData\n| where RawData matches regex @\"\\A\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+\\w+:\"\n| extend EventData = split(RawData, ' ')\n| extend EventOriginalResult = extract(@'\\A\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+\\w+:\\s(.*)', 1, RawData)\n| extend EventStartTime=todatetime(strcat(EventData[0], ' ',  EventData[1]))\n        ,EventSeverity=replace_string(tostring(EventData[2]), ':', '')\n| project-away EventData\n             , RawData;\nunion isfuzzy=false auditlog, acceslog, errorlog\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

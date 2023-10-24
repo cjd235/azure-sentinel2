@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(AIShield')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "AIShield",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "AIShield",
+        "query": "AIShield_CL\n| extend EventVendor = 'Bosch'\n| extend EventProduct = 'AIShield'\n| extend Severity = iff(probability_d between (0.85..1.0),\"High\",iff(probability_d between\n  (0.7..0.84), \"Medium\", iff(probability_d < (0.7),\"Low\",\"Unknown\")))\n| project-rename\n    AttackName = attack_name_s,\n    Message = RawMessage_s,\n    ServiceName = service_name_s,\n    AssetId = asset_id_s,\n    EventTimestamp = timestamp_t,\n    SourceName = source_name_s\n| project-away probability_d\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

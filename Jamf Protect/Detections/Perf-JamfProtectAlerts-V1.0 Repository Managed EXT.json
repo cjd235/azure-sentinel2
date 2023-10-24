@@ -1,0 +1,142 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6098daa0-f05e-44d5-b5a0-913e63ba3179')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6098daa0-f05e-44d5-b5a0-913e63ba3179')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "NRT",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Jamf Protect - Alerts",
+        "description": "'Creates an incident based on Jamf Protect Alert data in Microsoft Sentinel'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "JamfProtect\n| where EventProduct == \"Jamf Protect - Alerts\"\n    and isnotempty(EventSeverity)\n| extend\n    algorithm = \"SHA256\",\n    Host_IPs = tostring(parse_json(DvcIpAddr)[0]),\n    Tags = tostring(Match_facts[0].tags),\n    Tactics = case(Match_tags has \"Execution\", \"Execution\", Match_tags has \"Visibility\", \"Visibility\", Match_tags has \"Persistence\", \"Persistence\", Match_tags has \"LateralMovement\", \"LateralMovement\", Match_tags has \"CredentialAccess\", \"CredentialAcccess\", Match_tags has \"DefenseEvasion\", \"DefenseEvasion\", Match_tags has \"PrivilegeEscalation\", \"PrivilegeEscalation\", Match_tags has \"Impact\", \"Impact\", Match_tags has \"CommandAndControl\", \"CommandandControl\", Match_tags has \"Discovery\", \"Discovery\", Match_tags has \"InitialAccess\", \"InitialAccess\", \"\"),\n    Techniques = pack_array(extract(@\"[A-Za-z]\\d{4}\", 0, tostring(Match_tags))),\n    JamfPro = case(Match_actions has \"SmartGroup\", \"Workflow with Jamf Pro\", Match_actions has \"Prevented\", \"No workflow, Prevented by Protect\", \"No workflow\")\n",
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": null,
+        "techniques": null,
+        "alertRuleTemplateName": "6098daa0-f05e-44d5-b5a0-913e63ba3179",
+        "incidentConfiguration": {
+          "groupingConfiguration": {
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "enabled": false,
+            "reopenClosedIncident": false
+          },
+          "createIncident": true
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "{{EventMessage}} detected on {{DvcHostname}}",
+          "alertTacticsColumnName": "Tactics",
+          "alertSeverityColumnName": "EventSeverity",
+          "alertDescriptionFormat": "{{EventDescription}} - Please investigate",
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "AlertLink",
+              "value": "EventReportUrl"
+            },
+            {
+              "alertProperty": "ProviderName",
+              "value": "EventVendor"
+            },
+            {
+              "alertProperty": "ProductName",
+              "value": "EventProduct"
+            },
+            {
+              "alertProperty": "Techniques",
+              "value": "Techniques"
+            }
+          ]
+        },
+        "customDetails": {
+          "TargetBinarySignMsg": "TargetBinarySigningInfoMessage",
+          "TargetBinarySigner": "TargetBinarySigningTeamID",
+          "Protect_Analytic": "EventMessage",
+          "Related_File_hash": "TargetBinarySHA256",
+          "Protect_Tags": "Tags",
+          "TargetbinarySign": "TargetbinarySignerType",
+          "JamfPro_Status": "JamfPro",
+          "Protect_Event_Type": "EventType",
+          "Related_Binaries": "TargetBinaryFilePath"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "DvcHostname"
+              },
+              {
+                "identifier": "OSFamily",
+                "columnName": "DvcOs"
+              },
+              {
+                "identifier": "OSVersion",
+                "columnName": "DvcOsVersion"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "Host_IPs"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "TargetUsername"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "TargetProcessCurrentDirectory"
+              },
+              {
+                "identifier": "ProcessId",
+                "columnName": "TargetProcessId"
+              }
+            ],
+            "entityType": "Process"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Algorithm",
+                "columnName": "algorithm"
+              },
+              {
+                "identifier": "Value",
+                "columnName": "TargetBinarySHA256"
+              }
+            ],
+            "entityType": "FileHash"
+          }
+        ],
+        "templateVersion": "1.0.5",
+        "status": "Available"
+      }
+    }
+  ]
+}

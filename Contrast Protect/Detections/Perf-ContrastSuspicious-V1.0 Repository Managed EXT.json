@@ -1,0 +1,90 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f713404e-805c-4e0c-91fa-2c149f76a07d')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f713404e-805c-4e0c-91fa-2c149f76a07d')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Contrast Suspicious",
+        "description": "'Creates Incidents for Suspicious events sourced from the Contrast Protect agent.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let extract_data=(a:string, k:string) {\n  parse_urlquery(replace(@';', @'&', a))[\"Query Parameters\"][k]\n};\n\nCommonSecurityLog \n| where DeviceVendor == \"Contrast Security\"\n| where AdditionalExtensions contains \"SUSPICIOUS\"\n| extend DeviceProduct\n| extend SourceIP\n| extend DeviceVersion\n| extend Activity\n| extend ApplicationProtocol\n| extend RequestURL\n| extend RequestMethod\n| extend Rule = extract_data(AdditionalExtensions, 'pri')\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess",
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "f713404e-805c-4e0c-91fa-2c149f76a07d",
+        "customDetails": {
+          "Agent": "DeviceProduct",
+          "Attack": "Activity",
+          "Details": "AdditionalExtensions",
+          "Application": "ApplicationProtocol",
+          "AgentVersion": "DeviceVersion"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "SourceIP"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "RequestURL"
+              }
+            ],
+            "entityType": "URL"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "ApplicationProtocol"
+              }
+            ],
+            "entityType": "CloudApplication"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Activity"
+              },
+              {
+                "identifier": "Category",
+                "columnName": "Rule"
+              }
+            ],
+            "entityType": "Malware"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

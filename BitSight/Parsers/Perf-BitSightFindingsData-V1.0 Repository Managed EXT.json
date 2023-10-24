@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightFindingsData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightFindingsData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightFindingsData",
+        "query": "let FindingsData_view  = view () {\n    Findings_data_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"FindingsData\",\n                RemediationHistoryLastRequestedRefreshDate = column_ifexists('remediation_history_last_requested_refresh_date_s', ''),\n                RemediationHistoryLastRefreshStatusDate = column_ifexists('remediation_history_last_refresh_status_date_s', ''),\n                RemediationHistoryLastRefreshStatusLabel = column_ifexists('remediation_history_last_refresh_status_label_s', ''),\n                RemediationHistoryLastRefreshReasonCode = column_ifexists('remediation_history_last_refresh_reason_code_s', ''),\n                Comments = column_ifexists('comments_s', ''),\n                TemporaryId = column_ifexists('temporary_id_s', ''),\n                PcapID = column_ifexists('pcap_id_s', ''),\n                AffectsRating = column_ifexists('affects_rating_b', ''),\n                Assets = column_ifexists('assets_s', ''),\n                Details = column_ifexists('details_s', ''),\n                EvidenceKey = column_ifexists('evidence_key_s', ''),\n                FirstSeen = column_ifexists('first_seen_s', ''),\n                LastSeen = column_ifexists('last_seen_s', ''),\n                RelatedFindings = column_ifexists('related_findings_s', ''),\n                RiskCategory = column_ifexists('risk_category_s', ''),\n                RiskVector = column_ifexists('risk_vector_s', ''),\n                RiskVectorLabel = column_ifexists('risk_vector_label_s', ''),\n                RolledupObservationId = column_ifexists('rolledup_observation_id_s', ''),\n                Severity = column_ifexists('Severity', ''),\n                SeverityCategory = column_ifexists('severity_category_s', ''),\n                Tags = column_ifexists('tags_s', ''),\n                AssetOverrides = column_ifexists('asset_overrides_s', ''),\n                Duration = column_ifexists('duration_s', ''),\n                AttributedCompanies = column_ifexists('attributed_companies_s', ''),\n                CompanyName = column_ifexists('company_name_s', ''),\n                RemainingDecay = column_ifexists('remaining_decay_d', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                RemediationHistoryLastRequestedRefreshDate,\n                RemediationHistoryLastRefreshStatusDate,\n                RemediationHistoryLastRefreshStatusLabel,\n                RemediationHistoryLastRefreshReasonCode,\n                Comments,\n                TemporaryId,\n                PcapID,\n                AffectsRating,\n                Assets,\n                Details,\n                EvidenceKey,\n                FirstSeen,\n                LastSeen,\n                RelatedFindings,\n                RiskCategory,\n                RiskVector,\n                RiskVectorLabel,\n                RolledupObservationId,\n                Severity,\n                SeverityCategory,\n                Tags,\n                AssetOverrides,\n                Duration,\n                AttributedCompanies,\n                CompanyName,\n                RemainingDecay,\n                Type\n};\nFindingsData_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

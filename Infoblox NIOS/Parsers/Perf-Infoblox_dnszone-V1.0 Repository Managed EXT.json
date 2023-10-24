@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dnszone')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dnszone",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dnszone",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nlet RawData = Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has \"zone\"\n    | extend Parser = extract_all(@\"^(\\d{2}\\-[a-zA-Z]{3}\\-\\d{4}\\s[0-9\\.\\:]+)?\\s?([a-zA-Z-_]+)(\\s|\\:)?(.*)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n    | extend responseTime = todatetime(Parser[0]),\n             Log_Type = tostring(Parser[1]),\n             RawData_subString = tostring(Parser[3])\n    | project-away Parser;  \nRawData\n    | extend dnszone = extract_all(@\"([a-z0-9\\.\\-]+)\\/([A-Z]+)\\:(\\s[A-Z]+)?\\s(\\w+\\s\\w+)\\s(for\\s\\'(\\S+)?\\':)?((\\d+)\\.?)?(\\s(\\with\\s|(\\d+)\\sIN\\s)([A-Z]+)\\s)?(\\(?serial\\s(\\d+)\\)?)?(.*)\", dynamic([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]), RawData_subString)[0]\n    | extend Zone = tostring(dnszone[0]),\n        DvcAction = tostring(dnszone[3]),\n        SrcHostname = tostring(dnszone[5]),\n        TransactionIdHex = tostring(dnszone[7]),\n        Serial = tostring(dnszone[13]),\n        TTL = tostring(dnszone[10]),\n        DnsQueryType = tostring(dnszone[11])\n    | extend dnszone_substring = extract_all(@\"\\s?([a-zA-Z0-9\\.\\-\\_]+)\\.\\s(.*)\", dynamic([1,2]),tostring(dnszone[14]))[0]\n    | extend Src = tostring(dnszone_substring[0]),\n        EventMessage = tostring(dnszone_substring[1])\n    | project-away SyslogMessage, dnszone_substring, dnszone,RawData_subString;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

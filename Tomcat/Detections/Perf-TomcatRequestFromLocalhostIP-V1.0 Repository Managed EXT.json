@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a45dd6ea-4874-11ec-81d3-0242ac130003')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a45dd6ea-4874-11ec-81d3-0242ac130003')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Tomcat - Request from localhost IP address",
+        "description": "'Detects request from localhost IP address.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "TomcatEvent\n| where SrcIpAddr == \"127.0.0.1\"\n| extend File = extract(@'(.*\\/)?(.*)', 2, tostring(UrlOriginal))\n| extend IPCustomEntity = SrcIpAddr, FileCustomEntity = File\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "a45dd6ea-4874-11ec-81d3-0242ac130003",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "FileCustomEntity"
+              }
+            ],
+            "entityType": "File"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

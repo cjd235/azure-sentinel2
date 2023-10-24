@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(TheHive')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "TheHive",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "TheHive",
+        "query": "let TheHive_view  = view () { \n    TheHive_CL\n    | extend \n                EventVendor=\"TheHive Project\",\n                EventProduct=\"TheHive\",\n                ObjectUpdatedBy=column_ifexists('object_updatedBy_s', ''),\n                ObjectUpdatedAt=unixtime_milliseconds_todatetime(column_ifexists('object_updatedAt_d', '')),\n                Operation=column_ifexists('operation_s', ''),\n                ObjectType=column_ifexists('objectType_s', column_ifexists('object__type_s', '')),\n                ObjectId=column_ifexists('objectId_s', column_ifexists('object_id_s', '')),\n                StartDate=unixtime_milliseconds_todatetime(column_ifexists('startDate_d', '')),\n                RequestId=column_ifexists('requestId_s', ''),\n                DetailsDescription=column_ifexists('details_description_s', ''),\n                DetailsFlag=column_ifexists('details_flag_b', ''),\n                DetailsTitle=column_ifexists('details_title_s', ''),\n                DetailsStatus=column_ifexists('details_status_s', ''),\n                DetailsOwner=column_ifexists('details_owner_s', ''),\n                DetailsCaseId=column_ifexists('details_caseId_d', ''),\n                DetailsSeverity=column_ifexists('details_severity_d', ''),\n                DetailsTlp=column_ifexists('details_tlp_d', ''),\n                DetailsStartDate=unixtime_milliseconds_todatetime(column_ifexists('details_startDate_d', '')),\n                DetailsTags=column_ifexists('details_tags_s', ''),\n                Base=column_ifexists('base_b', ''),\n                RootId=column_ifexists('rootId_s', ''),\n                ObjectCreatedBy=column_ifexists('object_createdBy_s', ''),\n                ObjectDescription=column_ifexists('object_description_s', ''),\n                ObjectFlag=column_ifexists('object_flag_b', ''),\n                ObjectUser=column_ifexists('object_user_s', ''),\n                ObjectTitle=column_ifexists('object_title_s', ''),\n                ObjectStatus=column_ifexists('object_status_s', ''),\n                ObjectOwner=column_ifexists('object_owner_s', ''),\n                ObjectCreatedAt=unixtime_milliseconds_todatetime(column_ifexists('object_createdAt_d', '')),\n                ObjectCaseId=column_ifexists('object_caseId_d', ''),\n                ObjectSeverity=column_ifexists('object_severity_d', ''),\n                ObjectTlp=column_ifexists('object_tlp_d', ''),\n                ObjectStartDate=unixtime_milliseconds_todatetime(column_ifexists('object_startDate_d', '')),\n                ObjectTags=column_ifexists('object_tags_s', '')\n    | project\n                TimeGenerated, \n                EventVendor,\n                EventProduct,\n                ObjectUpdatedBy,\n                ObjectUpdatedAt,\n                Operation,\n                ObjectType,\n                ObjectId,\n                StartDate,\n                RequestId,\n                DetailsDescription,\n                DetailsFlag,\n                DetailsTitle,\n                DetailsStatus,\n                DetailsOwner,\n                DetailsCaseId,\n                DetailsSeverity,\n                DetailsTlp,\n                DetailsStartDate,\n                DetailsTags,\n                Base,\n                RootId,\n                ObjectCreatedBy,\n                ObjectDescription,\n                ObjectFlag,\n                ObjectUser,\n                ObjectTitle,\n                ObjectStatus,\n                ObjectOwner,\n                ObjectCreatedAt,\n                ObjectCaseId,\n                ObjectSeverity,\n                ObjectTlp,\n                ObjectStartDate,\n                ObjectTags    \n};\nTheHive_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

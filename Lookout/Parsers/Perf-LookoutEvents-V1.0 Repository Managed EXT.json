@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(LookoutEvents')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "LookoutEvents",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "LookoutEvents",
+        "query": "let LookoutEvents_view  = view () { \n    Lookout_CL\n    | extend \n        EventVendor=\"Lookout\",\n        EventProduct=\"Lookout Sentinel\",\n\t\tEnterpriseName=column_ifexists('enterprise_name_s', ''),\n\t\tDetailsActivationStatus=column_ifexists('details_activationStatus_s', ''),\n\t\tDetailsSecurityStatus=column_ifexists('details_securityStatus_s', ''),\n\t\tDetailsProtectionStatus=column_ifexists('details_protectionStatus_s', ''),\n\t\tUpdatedDetails=column_ifexists('updatedDetails_s', ''),\n\t\tDetailsDescription=column_ifexists('details_description_s', ''),\n\t\tDetailsApplicationName=column_ifexists('details_applicationName_s', ''),\n\t\tDetailsPackageName=column_ifexists('details_packageName_s', ''),\n\t\tDetailsPath=column_ifexists('details_path_s', ''),\n\t\tDetailsFileName=column_ifexists('details_fileName_s', ''),\n\t\tDetailsPackageSha=column_ifexists('details_packageSha_s', ''),\n\t\tDetailsAttributeChanges=column_ifexists('details_attributeChanges_s', ''),\n\t\tType=column_ifexists('type_s', ''),\n\t\tID=column_ifexists('id_s', ''),\n        EventStartTime=column_ifexists('eventTime_t', ''),\n\t\tEventEndTime=column_ifexists('eventTime_t', ''),\n\t\tChangeType=column_ifexists('changeType_s', ''),\n\t\tActorType=column_ifexists('actor_type_s', ''),\n\t\tActorId=column_ifexists('actor_id_g', ''),\n\t\tDetailsType=column_ifexists('details_type_s', ''),\n\t\tDetailsId=column_ifexists('details_id_g', ''),\n\t\tDetailsAction=column_ifexists('details_action_s', ''),\n\t\tDetailsSeverity=column_ifexists('details_severity_s', ''),\n\t\tDetailsClassifications=column_ifexists('details_classifications_s', ''),\n\t\tDetailsAssessments=column_ifexists('details_assessments_s', ''),\n\t\tDetailsPcpReportingReason=column_ifexists('details_pcpReportingReason_s', ''),\n\t\tDetailsPcpDeviceResponse=column_ifexists('details_pcpDeviceResponse_s', ''),\n\t\tTargetType=column_ifexists('target_type_s', ''),\n\t\tTargetId=column_ifexists('target_id_g', ''),\n\t\tTargetEmailAddress=column_ifexists('target_emailAddress_s', ''),\n\t\tTargetPlatform=column_ifexists('target_platform_s', ''),\n\t\tTargetOSVersion=column_ifexists('target_osVersion_s', ''),\n\t\tTargetManufacturer=column_ifexists('target_manufacturer_s', ''),\n\t\tTargetModel=column_ifexists('target_model_s', '')\n    | project\n        TimeGenerated, \n        Type,\n\t\tEnterpriseName,\n\t\tID,\n\t\tEventStartTime,\n\t\tEventEndTime,\n\t\tChangeType,\n\t\tActorType,\n\t\tActorId,\n        TargetType,\n        DetailsSeverity,\n\t\tDetailsClassifications,\n        DetailsActivationStatus,\n\t\tDetailsSecurityStatus,\n\t\tDetailsProtectionStatus,\n\t\tUpdatedDetails,\n\t\tDetailsDescription,\n\t\tDetailsApplicationName,\n\t\tDetailsPackageName,\n\t\tDetailsPath,\n\t\tDetailsFileName,\n\t\tDetailsPackageSha,\n\t\tDetailsAttributeChanges,\n\t\tDetailsType,\n\t\tDetailsId,\n\t\tDetailsAction,\n\t\tDetailsAssessments,\n\t\tDetailsPcpReportingReason,\n\t\tDetailsPcpDeviceResponse,\n\t\tTargetId,\n\t\tTargetEmailAddress,\n\t\tTargetPlatform,\n\t\tTargetOSVersion,\n\t\tTargetManufacturer,\n\t\tTargetModel\n};\nLookoutEvents_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

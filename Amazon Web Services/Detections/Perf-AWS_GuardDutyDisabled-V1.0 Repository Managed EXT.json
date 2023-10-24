@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9da99021-d318-4711-a78a-6dea76129b3a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9da99021-d318-4711-a78a-6dea76129b3a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GuardDuty detector disabled or suspended",
+        "description": "'GuardDuty Detector was disabled or suspended, possibly by an attacker trying to avoid detection of its malicious activities. Verify with the user identity that this activity is legitimate.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "AWSCloudTrail\n| where (EventName == \"DeleteDetector\" and isempty(ErrorCode) and isempty( ErrorMessage)) or (EventName == \"UpdateDetector\" and tostring(parse_json(RequestParameters).enable) == \"false\" and isempty(ErrorCode) and isempty( ErrorMessage))\n| extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))\n| extend timestamp = TimeGenerated, IPCustomEntity = SourceIpAddress, AccountCustomEntity = UserIdentityUserName\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562"
+        ],
+        "alertRuleTemplateName": "9da99021-d318-4711-a78a-6dea76129b3a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

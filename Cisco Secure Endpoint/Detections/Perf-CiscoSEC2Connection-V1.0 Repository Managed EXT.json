@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0f788a93-dc88-4f80-89ef-bef7cd0fef05')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0f788a93-dc88-4f80-89ef-bef7cd0fef05')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SE - Connection to known C2 server",
+        "description": "'This rule is triggered when connection to known C2 is detected from host.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "CiscoSecureEndpoint\n| where EventMessage has 'Suspected botnet connection'\n| extend HostCustomEntity = DstHostname, MalwareCustomEntity = ThreatName\n",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1071"
+        ],
+        "alertRuleTemplateName": "0f788a93-dc88-4f80-89ef-bef7cd0fef05",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "MalwareCustomEntity"
+              }
+            ],
+            "entityType": "Malware"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

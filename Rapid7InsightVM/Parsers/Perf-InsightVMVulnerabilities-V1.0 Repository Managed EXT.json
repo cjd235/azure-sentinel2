@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(InsightVMVulnerabilities')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "InsightVMVulnerabilities",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "InsightVMVulnerabilities",
+        "query": "let Insight_VM_vulnerabilities_view  = view () { \n    NexposeInsightVMCloud_vulnerabilities_CL\n| extend packed = pack(\n                     \"AssetId\", asset_id_s,\n                     \"DvcHostname\", host_name_s,\n                     \"DvcIpAddr\", ip_s,\n                     \"VulnDetailsAdded\", vuln_details_added_t,\n                     \"VulnDetailsCategories\", vuln_details_categories_s,\n                     \"VulnDetailsCves\", vuln_details_cves_s,\n                     \"VulnDetailsCvssV2AccessComplexity\", vuln_details_cvss_v2_access_complexity_s,\n                     \"VulnDetailsCvssV2AccessVector\", vuln_details_cvss_v2_access_vector_s,\n                     \"VulnDetailsCvssV2Authentication\", vuln_details_cvss_v2_authentication_s,\n                     \"VulnDetailsCvssV2AvailabilityImpact\", vuln_details_cvss_v2_availability_impact_s,\n                     \"VulnDetailsCvssV2ConfidentialityImpact\", vuln_details_cvss_v2_confidentiality_impact_s,\n                     \"VulnDetailsCvssV2ExploitScore\", vuln_details_cvss_v2_exploit_score_d,\n                     \"VulnDetailsCvssV2ImpactScore\", vuln_details_cvss_v2_impact_score_d,\n                     \"VulnDetailsCvssV2IntegrityImpact\", vuln_details_cvss_v2_integrity_impact_s,\n                     \"VulnDetailsCvssV2Score\", vuln_details_cvss_v2_score_d,\n                     \"VulnDetailsCvssV2Vector\", vuln_details_cvss_v2_vector_s,\n                     \"VulnDetailsCvssV2AttackComplexity\", vuln_details_cvss_v3_attack_complexity_s,\n                     \"VulnDetailsCvssV3AttackVector\", vuln_details_cvss_v3_attack_vector_s,\n                     \"VulnDetailsCvssV3AvailabilityImpact\", vuln_details_cvss_v3_availability_impact_s,\n                     \"VulnDetailsCvssV3ConfidentialityImpact\", vuln_details_cvss_v3_confidentiality_impact_s,\n                     \"VulnDetailsCvssV3ExploitScore\", vuln_details_cvss_v3_exploit_score_d,\n                     \"VulnDetailsCvssV3ImpactScore\", vuln_details_cvss_v3_impact_score_d,\n                     \"VulnDetailsCvssV3IntegrityImpact\", vuln_details_cvss_v3_integrity_impact_s,\n                     \"VulnDetailsCvssV3PrivilegesRequired\", vuln_details_cvss_v3_privileges_required_s,\n                     \"VulnDetailsCvssV3Scope\", vuln_details_cvss_v3_scope_s,\n                     \"VulnDetailsCvssV3Score\", vuln_details_cvss_v3_score_d,\n                     \"VulnDetailsCvssV3UserInteraction\", vuln_details_cvss_v3_user_interaction_s,\n                     \"VulnDetailsCvssV3Vector\", vuln_details_cvss_v3_vector_s,\n                     \"VulnDetailsDenialOfService\", vuln_details_denial_of_service_b,\n                     \"VulnDetailsDescription\", vuln_details_description_s,\n                     \"VulnDetailsExploits\", vuln_details_exploits_s,\n                     \"VulnDetailsId\", vuln_details_id_s,\n                     \"VulnDetailsLinks\", vuln_details_links_s,\n                     \"VulnDetailsMalwareKits\", vuln_details_malware_kits_s,\n                     \"VulnDetailsModified\", vuln_details_modified_t,\n                     \"VulnDetailsPciCvssScore\", vuln_details_pci_cvss_score_d,\n                     \"VulnDetailsPciFail\", vuln_details_pci_fail_b,\n                     \"VulnDetailsPciSeverityScore\", vuln_details_pci_severity_score_d,\n                     \"VulnDetailsPciSpecialNotes\", vuln_details_pci_special_notes_s,\n                     \"VulnDetailsPciStatus\", vuln_details_pci_status_s,\n                     \"VulnDetailsPublished\", vuln_details_published_t,\n                     \"VulnDetailsReferences\", vuln_details_references_s,\n                     \"VulnDetailsRiskScore\", vuln_details_risk_score_d,\n                     \"VulnDetailsSeverity\", vuln_details_severity_s,\n                     \"VulnDetailsSeverityScore\", vuln_details_severity_score_d,\n                     \"VulnDetailsTitle\", vuln_details_title_s\n                 )\n| project TimeGenerated, packed\n| evaluate bag_unpack(packed)\n| extend       \n         EventVendor=\"Rapid7\",\n         EventProduct=\"Insight VM\",\n         EventType=\"Vulnerabilities\"\n};\nInsight_VM_vulnerabilities_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

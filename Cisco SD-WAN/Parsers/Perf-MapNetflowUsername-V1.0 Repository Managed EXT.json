@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(MapNetflowUsername')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "MapNetflowUsername",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "MapNetflowUsername",
+        "query": "CiscoSyslogUTD\n| join (\nCiscoSDWANNetflow\n| where isnotempty(NetflowUsername)\n| summarize arg_max(TimeStamp, NetflowUsername) by NetflowFwSrcAddrIpv4\n| distinct \n    [\"Username\"] = NetflowUsername,\n    [\"SourceIP\"] = NetflowFwSrcAddrIpv4) on SourceIP\n    | distinct SourceIP, Username\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

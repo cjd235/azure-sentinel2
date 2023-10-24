@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SymantecDLP')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SymantecDLP",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SymantecDLP",
+        "query": "CommonSecurityLog\n| where DeviceVendor == \"Symantec\" and DeviceProduct == \"DLP\"\n| extend Blocked = extract(@\"BLOCKED=([^;]+)\\;\",1,AdditionalExtensions),\n         ApplicationName = extract(@\"APPLICATION_NAME=([^;]+)\\;\",1,AdditionalExtensions),\n         IncidentId = toint(extract(@\"INCIDENT_ID=([^;]+)\\;\",1,AdditionalExtensions)),\n         IncidentSnapshot = extract(@\"INCIDENT_SNAPSHOT=([^;]+)\\;\",1,AdditionalExtensions),\n         AttachedFileName = extract(@\"ATTACHMENT_FILENAME=([^;]+)\\;\",1,AdditionalExtensions),\n         FileName = extract(@\"FILE_NAME=([^;]+)\\;\",1,AdditionalExtensions),\n         MatchCount = toint(extract(@\"MATCH_COUNT=([^;])\\;\",1,AdditionalExtensions)),\n         Protocol = extract(@\"PROTOCOL=([^;])\\;\",1,AdditionalExtensions),\n         Recipients = extract(@\"RECIPIENTS_NAME=([^;]+)\\;\",1,AdditionalExtensions),\n         Sender = extract(@\"SENDER=([^;]+)\\;\",1,AdditionalExtensions),\n         Subject = extract(@\"SUBJECT=([^;]+)\\;\",1,AdditionalExtensions),\n         Severity = extract(@\"SEVERITY=([^;]+)\\;\",1,AdditionalExtensions),\n         EndpointMachine = extract(@\"ENDPOINT_MACHINE=([^;]+)\\;\",1,AdditionalExtensions),\n         EndpointDvcId = extract(@\"ENDPOINT_DEVICE_ID=([^;]+)\\;\",1,AdditionalExtensions),\n         MachineIpAddr = extract(@\"MACHINE_IP=([^;]+)\\;\",1,AdditionalExtensions),\n         OccuredOn = extract(@\"OCCURRED_ON=([^;]+)\\;\",1,AdditionalExtensions),\n         ReportedOn = extract(@\"REPORTED_ON=([^;]+)\\;\",1,AdditionalExtensions),\n         Url = extract(@\"URL=([^;]+)\\;\",1,AdditionalExtensions),\n         DstIpAddr = extract(@\"DESTINATION_IP=([^;]+)\\;\",1,AdditionalExtensions),\n         Scan = extract(@\"SCAN=([^;]+)\\;\",1,AdditionalExtensions),\n         QuarantinePath = extract(@\"QUARANTINE_PATH=([^;]+)\\;|$\",1,AdditionalExtensions)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

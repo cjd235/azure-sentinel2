@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VectraEntityScoring')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VectraEntityScoring",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VectraEntityScoring",
+        "query": "let VectraEntityScoring_view  = view () { \n    Entity_Scoring_Data_CL\n    | extend \n        EventVendor=\"VectraEntityScoring\",\n        EventProduct=\"VectraEntityScoring\",\n        ID = column_ifexists('id_d', ''),\n        [\"Entity ID\"] = column_ifexists('entity_id_d', ''),\n        [\"Active Detection Types\"] = column_ifexists('active_detection_types_s', ''),\n        [\"Breadth Contrib\"] = column_ifexists('breadth_contrib_d', ''),\n        Category = column_ifexists('Category', ''),\n        Importance = column_ifexists('importance_d', ''),\n        Type = column_ifexists('type_s', ''),\n        [\"Last Updated\"] = column_ifexists('event_timestamp_t', ''),\n        [\"Is Prioritized\"] = column_ifexists('is_prioritized_b', ''),\n        [\"Last Detection ID\"] = column_ifexists('last_detection_id_d', ''),\n        [\"Last Detection Type\"] = column_ifexists('last_detection_type_s', ''),\n        [\"Last Detection URL\"] = column_ifexists('last_detection_url_s', ''),\n        [\"Last Detection\"] = column_ifexists('last_detection_s', ''),\n        Name = column_ifexists('name_s', ''),\n        Severity = column_ifexists('severity_s', ''),\n        [\"Urgency Score\"] = column_ifexists('urgency_score_d', ''),\n        [\"Vectra Pivot\"] = column_ifexists('url_s', ''),\n        Velocity = column_ifexists('velocity_contrib_d', ''),\n        [\"Attack Rating\"] =  column_ifexists('attack_rating_d', '')\n    | extend [\"Vectra Pivot\"] = case(isnotempty(['Vectra Pivot']), strcat(['Vectra Pivot'], \"?pivot=Vectra-Sentinel-1.0.0\"), ['Vectra Pivot'])\n    | project\n        TimeGenerated,\n        EventVendor,\n        EventProduct,\n        ID,\n        [\"Entity ID\"],\n        Name,\n        Importance,\n        Type,\n        [\"Is Prioritized\"],\n        Severity,\n        [\"Urgency Score\"],\n        [\"Vectra Pivot\"],\n        Category,\n        [\"Last Detection URL\"],\n        [\"Last Detection Type\"],\n        [\"Last Detection ID\"],\n        [\"Last Detection\"],\n        [\"Active Detection Types\"],\n        [\"Last Updated\"],\n        [\"Breadth Contrib\"],\n        Velocity,\n        [\"Attack Rating\"]\n};\nVectraEntityScoring_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6e76fd9d-8104-41eb-bad3-26054a3ad5f0')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6e76fd9d-8104-41eb-bad3-26054a3ad5f0')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "DDoS Attack IP Addresses - PPS Threshold",
+        "description": "Identifies IP addresses that generates maximal traffic rate over 10k PPS during DDoS attack mitigation",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "AzureDiagnostics \n| where ResourceType == 'PUBLICIPADDRESSES' and Category == \"DDoSMitigationFlowLogs\"\n//sample rate of mitigation device 1:1000 so the PPS of the source is estimated to be x1000.\n| summarize PPS = 1000 * count() by destPublicIpAddress_s, sec = bin(TimeGenerated, 1s), sourcePublicIpAddress_s\n| summarize maxPPS = max(PPS) by destPublicIpAddress_s, sourcePublicIpAddress_s\n| order by destPublicIpAddress_s, maxPPS desc\n| where maxPPS > 10000\n",
+        "queryFrequency": "PT2H",
+        "queryPeriod": "PT2H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1498"
+        ],
+        "alertRuleTemplateName": "6e76fd9d-8104-41eb-bad3-26054a3ad5f0",
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "sourcePublicIpAddress_s"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

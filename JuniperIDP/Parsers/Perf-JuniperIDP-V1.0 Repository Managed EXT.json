@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(JuniperIDP')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "JuniperIDP",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "JuniperIDP",
+        "query": "let Juniper_IDP_main_view = view () {\n    JuniperIDP_CL \n    | extend\n\t\tEventVendor=\"Juniper\",\n        EventProduct=\"IDP\",\n\t\tDvcHostname=host_s,\n\t\tSrcDvcType=ident_s,\n\t\tEventType=msgid_s,\n\t\tSrcDvcOs=dvc_os_s,\n\t\tEventEndTime=event_end_time_s,\n\t\tMessageType=message_type_s,\n\t\tSrcIpAddr=source_address_s,\n\t\tDstIpAddr=destination_address_s,\n\t\tDstPortNumber=destination_port_s,\n\t\tNetworkProtocol=protocol_name_s,\n\t\tServiceName=service_name_s,\n\t\tNetworkApplicationProtocol=application_name_s,\n\t\tNetworkRuleNumber=rule_name_s,\n\t\tNetworkRulebaseName=rulebase_name_s,\n\t\tPolicyName=policy_name_s,\n\t\tExportId=export_id_s,\n\t\tRepeatCount=repeat_count_s,\n\t\tDvcAction=action_s,\n\t\tEventSeverity=threat_severity_s,\n\t\tThreatName=attack_name_s,\n\t\tSrcNatIpAddr=nat_source_address_s,\n\t\tSrcNatPortNumber=nat_source_port_s,\n        DstNatPortNumber=nat_destination_port_s,\n\t\tDstNatIpAddr=nat_destination_address_s,\n\t\tNetworkDuration=elapsed_time_s,\n\t\tDstBytes=inbound_bytes_s,\n\t\tSrcBytes=outbound_bytes_s,\n\t\tDstPackets=inbound_packets_s,\n\t\tSrcPackets=outbound_packets_s,\n\t\tSrcZone=source_zone_name_s,\n\t\tSrcIntefaceName=source_interface_name_s,\n\t\tDstZone=destination_zone_name_s,\n\t\tDstInterfaceName=destination_interface_name_s,\n\t\tPacketLogId=packet_log_id_s,\n\t\tIsAlert=alert_s,\n\t\tDstUserName=username_s,\n\t\tRoles=roles_s,\n\t\tEventMessage=msg_s\n       | project\n       \tTimeGenerated,\n        EventVendor,\n        EventProduct,\n\t\tDvcHostname,\n\t\tSrcDvcType,\n\t\tEventType,\n\t\tSrcDvcOs,\n\t\tEventEndTime,\n\t\tMessageType,\n\t\tSrcIpAddr,\n\t\tDstIpAddr,\n\t\tDstPortNumber,\n\t\tNetworkProtocol,\n\t\tServiceName,\n\t\tNetworkApplicationProtocol,\n\t\tNetworkRuleNumber,\n\t\tNetworkRulebaseName,\n\t\tPolicyName,\n\t\tExportId,\n\t\tRepeatCount,\n\t\tDvcAction,\n\t\tEventSeverity,\n\t\tThreatName,\n\t\tSrcNatIpAddr,\n\t\tSrcNatPortNumber,\n\t\tDstNatIpAddr,\n\t\tDstNatPortNumber,\n\t\tNetworkDuration,\n\t\tDstBytes,\n\t\tSrcBytes,\n\t\tDstPackets,\n\t\tSrcPackets,\n\t\tSrcZone,\n\t\tSrcIntefaceName,\n\t\tDstZone,\n\t\tDstInterfaceName,\n\t\tPacketLogId,\n\t\tIsAlert,\n\t\tDstUserName,\n\t\tRoles,\n\t\tEventMessage      \n};\nJuniper_IDP_main_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

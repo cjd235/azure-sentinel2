@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ibossUrlEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ibossUrlEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ibossUrlEvent",
+        "query": "CommonSecurityLog\n| where DeviceVendor == \"iboss\" and FlexString2 == \"URL\"\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2)\n| project-rename EventVendor=DeviceVendor\n                , EventProduct=DeviceProduct\n                , EventProductVersion=DeviceVersion\n                , EventResult=DeviceEventClassID\n                , EventResultDetails=FlexNumber1\n                , DvcAction=DeviceAction\n                , RuleName=FlexString1\n                , SrcPortNumber=SourcePort\n                , SrcIpAddr=SourceIP\n                , SrcMacAddr=SourceMACAddress\n                , SrcUsername=SourceUserName\n                , SrcBytes=SentBytes\n                , DstPortNumber=DestinationPort\n                , DstIpAddr=DestinationIP\n                , DstBytes=ReceivedBytes\n                , Domain=DestinationHostName\n                , Url=RequestURL\n                , UrlCategory=DeviceCustomString2\n                , HttpRequestMethod=RequestMethod\n                , HttpUserAgent=RequestClientApplication\n                , FileSHA256=DeviceCustomString3\n                , ThreatName=DeviceCustomString1\n                , MalwareDetected=DeviceCustomNumber1\n                , CNCDetected=DeviceCustomNumber2\n| extend NetworkBytes=SrcBytes+DstBytes\n        , EventTime=todatetime(DeviceCustomDate1)\n| project-away DeviceCustom*\n            , FlexNumber*\n            , FlexString*\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

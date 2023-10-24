@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1399a9a5-6200-411e-8c34-ca5658754cf7')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1399a9a5-6200-411e-8c34-ca5658754cf7')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SEG - Multiple large emails sent to external recipient",
+        "description": "'Detects possible data exfiltration.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let e_theshold = 3;\nlet s_threshold = 10000000;\nCiscoSEGEvent\n| where AdditionalFields[15]['ESAMsgSize'] > s_threshold\n| where NetworkDirection =~ 'Outgoing'\n| extend rec_domain = extract(@'@(.*)', 1, DstUserName)\n| extend s_domain = extract(@'@(.*)', 1, SrcUserName)\n| where s_domain != rec_domain\n| summarize count() by SrcUserName\n| where count_ >= e_theshold\n| extend AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1030"
+        ],
+        "alertRuleTemplateName": "1399a9a5-6200-411e-8c34-ca5658754cf7",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

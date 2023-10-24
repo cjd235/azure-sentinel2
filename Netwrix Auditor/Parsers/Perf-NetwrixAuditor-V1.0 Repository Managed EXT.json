@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(NetwrixAuditor')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "NetwrixAuditor",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "NetwrixAuditor",
+        "query": "CommonSecurityLog\n| where DeviceVendor == 'Netwrix'\n| extend EventVendor = 'Netwrix'\n| extend EventProduct = 'Netwrix Auditor'\n| extend EventSchemaVersion = 0.2\n| extend EventCount = 1\n| project-rename EventProductVersion=DeviceVersion\n                , EventSubType=DeviceProduct\n                , EventOriginalType=DeviceEventClassID\n                , EventSeverity=LogSeverity\n                , EventMessage=Message\n                , SrcHostname=SourceHostName\n                , EventResult= Activity\n                , Object = FilePath\n                , ActorUsername = SourceUserName\n| mv-apply AdditionalFields = extract_all(@'(?P<key>[a-zA-Z0-9-_]+)=(?P<value>[a-zA-Z0-9-_:/@.,#{}><\" ]+)', dynamic([\"key\",\"value\"]), AdditionalExtensions) on (\n    project packed1 = pack(tostring(AdditionalFields[0]), tostring(AdditionalFields[1]))\n    | summarize bag = make_bag(packed1)\n)\n| evaluate bag_unpack(bag)\n| extend EventStartTime = coalesce(column_ifexists(\"StartTime\",datetime(null)),todatetime(start))\n| extend EventOriginalResultDetails = coalesce(column_ifexists(\"DeviceEventCategory\",\"\"),cat)\n| project-away start,\n               cat,\n               AdditionalExtensions\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

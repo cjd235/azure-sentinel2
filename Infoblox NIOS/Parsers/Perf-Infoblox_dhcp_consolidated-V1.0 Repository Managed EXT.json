@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcp_consolidated')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcp_consolidated",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcp_consolidated",
+        "query": "union\nInfoblox_dhcpadded,Infoblox_dhcpbindupdate,Infoblox_dhcpdiscover,Infoblox_dhcpexpire,Infoblox_dhcpinform,Infoblox_dhcpoffer,Infoblox_dhcpoption,Infoblox_dhcpother,Infoblox_dhcprelease,Infoblox_dhcpremoved,Infoblox_dhcprequest,Infoblox_dhcpsession,Infoblox_allotherdhcpdTypes\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

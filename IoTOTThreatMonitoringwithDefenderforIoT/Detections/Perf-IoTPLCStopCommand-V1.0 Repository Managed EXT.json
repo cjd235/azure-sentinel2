@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a7d3f642-15d8-4e83-99ee-83ca3352525d')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a7d3f642-15d8-4e83-99ee-83ca3352525d')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "PLC Stop Command (Microsoft Defender for IoT)",
+        "description": "'This alert leverages Defender for IoT to detect PLC stop commands which could indicate improper configuration or malicious activity on the network such as a threat manipulating PLC programming to affect the function of the network.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let alertList = dynamic([\"Controller Reset\", \"An S7 Stop PLC Command was Sent\", \"Controller Stop\", \"Excessive Restart Rate of an Outstation\", \"GE SRTP Stop PLC Command was Sent\", \"Outstation Restarted\", \"Outstation Restarts Frequently\", \"Profinet Device Factory Reset\", \"Slave Device Unrecoverable Failure\", \"Suspicion of Hardware Problems in Outstation\"]);\nSecurityAlert\n| where ProviderName == \"IoTSecurity\"\n| where AlertName has_any (alertList) \n| extend ExtendedProperties = parse_json(ExtendedProperties)\n| where tostring(ExtendedProperties.isNew) == \"True\"\n| extend DeviceId = tostring(ExtendedProperties.DeviceId), \n         SourceDeviceAddress = tostring(ExtendedProperties.SourceDeviceAddress), \n         DestDeviceAddress = tostring(ExtendedProperties.DestinationDeviceAddress), \n         RemediationSteps = tostring(parse_json(RemediationSteps)[0]), \n         Protocol = tostring(ExtendedProperties.Protocol), \n         AlertManagementUri = tostring(ExtendedProperties.AlertManagementUri)\n| project\n  TimeGenerated,\n  DeviceId,\n  ProductName,\n  ProductComponentName,\n  AlertSeverity,\n  AlertName,\n  Description,\n  Protocol,\n  SourceDeviceAddress,\n  DestDeviceAddress,\n  RemediationSteps,\n  Tactics,\n  Entities,\n  VendorOriginalId,\n  AlertLink,\n  AlertManagementUri,\n  Techniques\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T0858"
+        ],
+        "alertRuleTemplateName": "a7d3f642-15d8-4e83-99ee-83ca3352525d",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "(MDIoT) {{AlertName}}",
+          "alertTacticsColumnName": "Tactics",
+          "alertSeverityColumnName": "AlertSeverity",
+          "alertDescriptionFormat": "(MDIoT) {{Description}}",
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "ProductName",
+              "value": "ProductName"
+            },
+            {
+              "alertProperty": "RemediationSteps",
+              "value": "RemediationSteps"
+            },
+            {
+              "alertProperty": "Techniques",
+              "value": "Techniques"
+            },
+            {
+              "alertProperty": "ProductComponentName",
+              "value": "ProductComponentName"
+            },
+            {
+              "alertProperty": "AlertLink",
+              "value": "AlertLink"
+            }
+          ]
+        },
+        "customDetails": {
+          "VendorOriginalId": "VendorOriginalId",
+          "Protocol": "Protocol",
+          "AlertManagementUri": "AlertManagementUri",
+          "Sensor": "DeviceId"
+        },
+        "entityMappings": null,
+        "sentinelEntitiesMappings": [
+          {
+            "columnName": "Entities"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

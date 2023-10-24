@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dnsgss')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dnsgss",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dnsgss",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nlet RawData = Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has \"gss_accept_sec_context\"\n     | extend Parser = extract_all(@\"^(\\d{2}\\-[a-zA-Z]{3}\\-\\d{4}\\s[0-9\\.\\:]+)?\\s?([a-zA-Z-_]+)(\\s|\\:)?(.*)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n    | extend responseTime = todatetime(Parser[0]),\n             Log_Type = tostring(Parser[1]),\n             RawData_subString = tostring(Parser[3])\n    | project-away Parser;  \nRawData\n    | extend dnsgss = extract_all(@\":\\s(.*)\", dynamic([1,2]), RawData_subString)[0]\n    | extend EventMessage = tostring(dnsgss[0])\n    | project-away dnsgss, SyslogMessage,RawData_subString;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

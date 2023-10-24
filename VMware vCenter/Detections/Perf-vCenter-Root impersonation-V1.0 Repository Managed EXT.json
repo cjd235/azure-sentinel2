@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f1fcb22c-b459-42f2-a7ee-7276b5f1309c')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f1fcb22c-b459-42f2-a7ee-7276b5f1309c')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "vCenter - Root impersonation",
+        "description": "'Detects when root impersonation occurs.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "vCenter\n | where Message has_all ('ImpersonateUser', 'VcIntegrity', 'root')\n | extend user = 'root'\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "PrivilegeEscalation"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "f1fcb22c-b459-42f2-a7ee-7276b5f1309c",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "user"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

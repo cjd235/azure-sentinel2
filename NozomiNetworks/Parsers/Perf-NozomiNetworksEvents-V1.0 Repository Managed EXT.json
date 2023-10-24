@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(NozomiNetworksEvents')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "NozomiNetworksEvents",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "NozomiNetworksEvents",
+        "query": "CommonSecurityLog \n| where DeviceVendor has 'Nozomi'\n| extend EventVendor = DeviceVendor\n| extend EventProduct = DeviceProduct\n| extend EventProductVersion = DeviceVersion\n| extend EventSeverity = LogSeverity\n| extend SrcIpAddr = SourceIP\n| extend SrcHostName = SourceHostName\n| extend DstIpAddr = DestinationIP\n| extend DstHostname = DestinationHostName\n| extend SrcUserName = SourceUserName\n| extend EventMessage = Message\n| extend EventSubType = DeviceEventClassID\n| extend EventStartTime = coalesce(StartTime,unixtime_milliseconds_todatetime(tolong(extract(@'start=(\\w+).*', 1, AdditionalExtensions))),datetime(null))\n| extend DvcHostname = DeviceName\n| extend MitreAttackTactics = FlexString2\n| extend MitreAttackTechniques = FlexString1\n| extend EventSubType = Activity\n| extend Risk = iff(DeviceCustomString1Label == \"Risk\", DeviceCustomString1, '')\n| extend IsSecurity = iff(DeviceCustomString2Label == \"isSecurity\", DeviceCustomString2, '')\n| extend EventOriginalUid = DeviceCustomString3\n| extend TriggerType = DeviceCustomString4\n| extend Parents = DeviceCustomString5\n| extend NetworkApplicationProtocol = ApplicationProtocol\n| extend DstMacAddr = DestinationMACAddress \n| extend SrcMacAddr = SourceMACAddress\n| extend DstPortNumber= DestinationPort\n| extend SrcPortNumber= SourcePort\n| extend EventType = case (\n                            DeviceCustomString1Label contains \"Risk\", \"Alert\",\n                            DeviceCustomString1Label contains \"Browser\", \"Audit Log\",\n                            \"Health Log\"\n                            )\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9cb7c337-f176-4af6-b0e8-b6b7552d762d')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9cb7c337-f176-4af6-b0e8-b6b7552d762d')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Flare Infected Device",
+        "description": "'Infected Device found on darkweb or Telegram'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Firework_CL\n| where category_name_s contains \"Infected Device\" or source_s==\"genesis_market\" and (risk_score_d == \"3\" or risk_score_d == \"4\" or risk_score_d == \"5\")\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1555"
+        ],
+        "alertRuleTemplateName": "9cb7c337-f176-4af6-b0e8-b6b7552d762d",
+        "customDetails": null,
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

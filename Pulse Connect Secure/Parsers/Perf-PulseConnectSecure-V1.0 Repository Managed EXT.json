@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(PulseConnectSecure')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "PulseConnectSecure",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "PulseConnectSecure",
+        "query": "Syslog\n| where Computer in (\"datasource\") and Facility == \"local7\"\n// Version 8.0R7 and below using the Standard format\n| extend Parser = extract_all(@'^(\\d{4}\\-\\d{2}-\\d{2})\\s(\\d{2}\\:\\d{2}:\\d{2})\\s(\\S+)\\s(\\S+)\\s(\\S+)\\s\\[(\\S+)\\]\\s(.*)\\((.*)?\\)\\[(.*)\\]\\s\\-\\s(.*)',dynamic([1,2,3,4,5,6,7,8,9,10]),SyslogMessage)\n| mv-expand Parser\n| extend LogTime = todatetime(strcat(tostring(Parser[0]),'T',tostring(Parser[1]))), \n    Node = tostring(Parser[3]), \n    Source_IP = tostring(Parser[5]), \n    User = tostring(Parser[6]), \n    Realm = tostring(Parser[7]), \n    EventID = tostring(Parser[8]), \n    Messages = tostring(Parser[9])\n| project-away Parser\n// The section below is for parsing WebTrends Enhanced Log Format (WELF) logs.  If you are NOT using WELF, then keep this section commented out otherwise uncomment each line to use\n// Version 8.0R7 and above using the WELF format\n//| extend User = extract(@'user=(\\S+)',1,SyslogMessage),\n//    EventID = extract(@'id=(\\S+)',1,SyslogMessage),\n//    Pri = extract(@'pri=(\\S+)',1,SyslogMessage),\n//    Node = extract(@'vpn=\\\"(\\S+)\\\"',1,SyslogMessage),\n//    Realm = extract(@'realm=\\\"([\\w\\s\\:\\.]+)\\\"',1,SyslogMessage),\n//    Roles = extract(@'roles=\\\"([\\w\\s\\:\\.]+)\\\"',1,SyslogMessage),\n//    Type = extract(@'type=(\\S+)',1,SyslogMessage),\n//    Messages = extract(@'msg=\\\"([\\w\\s\\:\\.]+)\\\"',1,SyslogMessage),\n//    Source_IP = extract(@'fw=([\\d\\.]+)',1,SyslogMessage)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

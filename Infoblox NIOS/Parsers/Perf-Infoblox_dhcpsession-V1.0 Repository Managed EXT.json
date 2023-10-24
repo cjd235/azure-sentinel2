@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dhcpsession')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dhcpsession",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dhcpsession",
+        "query": "let datasource = (_GetWatchlist('Sources_by_SourceType')| where SearchKey == 'InfobloxNIOS' | project Source);\nlet RawData = Syslog\n    | where Computer in (datasource)\n    | where SyslogMessage has \"r-l-e\"\n    | extend Parser = extract_all(@\"^(\\d{2}\\-[a-zA-Z]{3}\\-\\d{4}\\s[0-9\\.\\:]+)?\\s?([a-zA-Z-_]+)(\\s|\\:)?(.*)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n    | extend responseTime = todatetime(Parser[0]),\n             Log_Type = tostring(Parser[1]),\n             RawData_subString = tostring(Parser[3])\n    | project-away Parser;\nRawData\n    | extend dhcpsession = extract_all(@\"\\:?([0-9.]+)\\,([a-zA-Z]+)\\,([a-zA-Z0-9-]+)\\,([a-z0-9:]+)\\,([0-9]+)\\,([0-9]+)\\,([0-9]+)?\\,([\\w$\\s]+)\\,([0-9.]+)\\,([0-9]+)\\,([0-9-.]+)\", dynamic([1,2,3,4,5,6,7,8,9,10,11]), RawData_subString)[0]\n    | extend DvcIpAddr = tostring(dhcpsession[0]),  \n        Signature = tostring(dhcpsession[1]),\n        SrcHostname = tostring(dhcpsession[2]),  \n        DvcMacAddr = tostring(dhcpsession[3]),\n        StartTime = tostring(dhcpsession[4]),  \n        EndTime = tostring(dhcpsession[5]),  \n        Network = tostring(dhcpsession[8]),\n        NetworkRange = tostring(dhcpsession[10])\n    | project-away SyslogMessage, dhcpsession,RawData_subString;\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

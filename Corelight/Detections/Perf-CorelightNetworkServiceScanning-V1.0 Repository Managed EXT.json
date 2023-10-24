@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/599570d4-06f8-4939-8e29-95cd003f1abd')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/599570d4-06f8-4939-8e29-95cd003f1abd')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Corelight - Network Service Scanning Multiple IP Addresses",
+        "description": "'Identify scanning of services that may be available on the internal network.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 25;\nCorelight\n| where EventType =~ 'conn'\n| where ZeekConnLocalSrc == 'True'\n| where ZeekConnLocalDst == 'True'\n| where NetworkConnectionState in~ ('S0', 'REJ')\n| where NetworkConnectionHistory !contains 'D'\n| summarize count() by SrcIpAddr, DstPort, bin(TimeGenerated, 1m)\n| where count_ > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "599570d4-06f8-4939-8e29-95cd003f1abd",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

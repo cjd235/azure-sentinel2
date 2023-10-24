@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/dfdb9a73-4335-4bb4-b29b-eb713bce61a6')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/dfdb9a73-4335-4bb4-b29b-eb713bce61a6')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SEG - Multiple suspiciuos attachments received",
+        "description": "'Detects possibly phishing emails.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let r_threshold = 5;\nCiscoSEGEvent\n| where NetworkDirection =~ 'Incoming'\n| where isnotempty(EventMessage)\n| where strlen(EventMessage) < 20\n| summarize rec=makeset(DstUserName) by EventMessage, bin(TimeGenerated, 10m)\n| where array_length(rec) > r_threshold\n| extend AccountCustomEntity = rec\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "dfdb9a73-4335-4bb4-b29b-eb713bce61a6",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

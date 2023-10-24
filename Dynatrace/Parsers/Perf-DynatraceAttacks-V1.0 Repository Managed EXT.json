@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DynatraceAttacks')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DynatraceAttacks",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DynatraceAttacks",
+        "query": "DynatraceAttacks_CL\n| extend EventVendor = 'Dynatrace'\n| extend EventProduct = 'Application Security'\n| extend Severity = 'High'\n| project-rename\n    AttackId = attackId_s,\n    AttackType = attackType_s,\n    DisplayId = displayId_s,\n    DisplayName = displayName_s,\n    State = state_s,\n    TimeStamp = timestamp_d,\n    url = request_url_s,\n    host = request_host_s,\n    sourceIp = attacker_sourceIp_s,\n    managementZones = managementZones_s\n| project-away request_path_s, request_protocolDetails_http_requestMethod_s, \n    request_protocolDetails_http_headers_values_s, request_protocolDetails_http_headers_truncationInfo_s,\n    request_protocolDetails_http_parameters_values_s, request_protocolDetails_http_parameters_truncationInfo_s,\n    entrypoint_entrypointFunction_displayName_s, entrypoint_entrypointFunction_className_s,\n    entrypoint_entrypointFunction_functionName_s, entrypoint_entrypointFunction_parameterTypes_values_s,\n    vulnerability_displayName_s, vulnerability_codeLocation_displayName_s,\n    vulnerability_codeLocation_className_s, vulnerability_codeLocation_functionName_s,\n    vulnerability_codeLocation_parameterTypes_values_s, vulnerability_codeLocation_parameterTypes_truncationInfo_truncated_b,\n    vulnerability_codeLocation_returnType_s, vulnerability_codeLocation_lineNumber_d,\n    entrypoint_entrypointFunction_parameterTypes_truncationInfo_truncated_b, entrypoint_entrypointFunction_returnType_s,\n    entrypoint_payload_values_s, entrypoint_payload_truncationInfo_truncated_b,\n    vulnerability_vulnerabilityId_s, vulnerability_vulnerableFunction_displayName_s,\n    vulnerability_vulnerableFunction_className_s, vulnerability_vulnerableFunction_functionName_s,\n    vulnerability_vulnerableFunction_parameterTypes_values_s, vulnerability_vulnerableFunction_parameterTypes_truncationInfo_truncated_b,\n    vulnerability_vulnerableFunction_returnType_s, vulnerability_vulnerableFunctionInput_type_s,\n    vulnerability_vulnerableFunctionInput_inputSegments_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

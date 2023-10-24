@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/64796da3-6383-4de2-9c97-866c83c459ae')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/64796da3-6383-4de2-9c97-866c83c459ae')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Semperis DSP Recent sIDHistory changes on AD objects",
+        "description": "'This indicator detects any recent changes to sIDHistory on AD objects, including changes to non-privileged accounts where privileged SIDs are added.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "dsp_parser\n| where EventID == 9212\n| where SecurityIndicatorName == \"Recent sIDHistory changes on objects\"\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "PrivilegeEscalation"
+        ],
+        "alertRuleTemplateName": "64796da3-6383-4de2-9c97-866c83c459ae",
+        "customDetails": null,
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

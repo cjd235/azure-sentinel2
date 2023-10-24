@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Workplace_Facebook')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Workplace_Facebook",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Workplace_Facebook",
+        "query": "let Workplace_Facebook_view = view () {\n    Workplace_Facebook_CL \n| extend tmp = parse_json(entry_s) \n| mv-expand tmp \n    | extend   \n                EventUid = tmp[\"id\"],\n                EventEndTime = unixtime_seconds_todatetime(tolong(tmp[\"time\"])),\n                Changes = tmp[\"changes\"],\n                EventType = object_s,\n                EventVendor = \"Facebook\",\n                EventProduct = \"Workplace\"\n    | project-away tmp, entry_s, object_s\n};\nWorkplace_Facebook_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightCompanyRatings')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightCompanyRatings",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightCompanyRatings",
+        "query": "let CompanyRatings_view  = view () {\n    Company_rating_details_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"CompanyRating\",\n                CompanyName = column_ifexists('Company_name_s', ''),\n                Beta = column_ifexists('beta_b', ''),\n                Category = column_ifexists('Category', ''),\n                CategoryOrder = column_ifexists('category_order_d', ''),\n                DisplayURL = column_ifexists('display_url_s', ''),\n                Grade = column_ifexists('grade_s', ''),\n                GradeColor = column_ifexists('grade_color_s', ''),\n                Name = column_ifexists('name_s', ''),\n                Order = column_ifexists('order_d', ''),\n                Percentile = column_ifexists('percentile_d', ''),\n                Rating = column_ifexists('rating_d', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                CompanyName,\n                Beta,\n                Category,\n                CategoryOrder,\n                DisplayURL,\n                Grade,\n                GradeColor,\n                Name,\n                Order,\n                Percentile,\n                Rating,\n                Type\n};\nCompanyRatings_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

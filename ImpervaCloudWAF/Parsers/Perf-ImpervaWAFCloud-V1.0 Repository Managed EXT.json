@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ImpervaWAFCloud')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ImpervaWAFCloud",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ImpervaWAFCloud",
+        "query": "ImpervaWAFCloud_CL \n| extend    EventVendor = EventVendor_s,\n            EventProduct = EventProduct_s,\n            EventType = EventType_s,\n            EventSeverity = column_ifexists('severity_s', ''),\n            DvcAction = column_ifexists('act_s', ''),\n            NetworkApplicationProtocol = column_ifexists('app_s', ''),\n            Country = column_ifexists('ccode_s', ''),\n            City = column_ifexists('cicode_s', ''),\n            HttpStatusCode = column_ifexists('cn1_s', ''),\n            SrcPortNumber = column_ifexists('cpt_s', ''),\n            AccountName = column_ifexists('Customer_s', ''),\n            RequestId = column_ifexists('deviceExternalId_s', ''),\n            PoPName = column_ifexists('deviceFacility_s', ''),\n            BrowserType = column_ifexists('dproc_s', ''),\n            EventEndTime = column_ifexists('end_s', ''),\n            NetworkSessionId = column_ifexists('fileId_s', ''),\n            PostBody = column_ifexists('postbody_s', ''),\n            QueryString = column_ifexists('qstr_s', ''),\n            UrlOriginal = column_ifexists('request_s', ''),\n            HttpUserAgentOriginal = column_ifexists('requestClientApplication_s', ''),\n            HttpRequestMethod = column_ifexists('requestMethod_s', ''),\n            DstIpAddr = column_ifexists('sip_s', ''),\n            SiteID = column_ifexists('siteid_s', ''),\n            DstDomainHostname = column_ifexists('sourceServiceName_s', ''),\n            DstPortNumber = column_ifexists('spt_s', ''),\n            SrcIpAddr = column_ifexists('src_s', ''),\n            EventStartTime = column_ifexists('start_s', ''),\n            AccountID = column_ifexists('suid_s', ''),\n            NetworkApplicationProtocoVersion = column_ifexists('ver_s', ''),\n            HttpRequestXff = column_ifexists('xff_s', ''),\n            CaptchaSupport = column_ifexists('CapSupport_s', ''),\n            ClientApp = column_ifexists('clapp_s', ''),\n            ClientAppSig = column_ifexists('clappsig_s', ''),\n            CookiesSupport = column_ifexists('COSupport_s', ''),\n            SrcGeoLatitude = column_ifexists('latitude_s', ''),\n            SrcGeoLongitude = column_ifexists('longitude_s', ''),\n            VisitorID = column_ifexists('VID_g', '')\n| project TimeGenerated, EventVendor, EventProduct, EventType, EventSeverity, DvcAction, NetworkApplicationProtocol, Country, City, HttpStatusCode, SrcPortNumber, AccountName, RequestId, PoPName, BrowserType, EventEndTime, NetworkSessionId, PostBody, QueryString, UrlOriginal, HttpUserAgentOriginal, HttpRequestMethod, DstIpAddr, SiteID, DstDomainHostname, DstPortNumber, SrcIpAddr, EventStartTime, AccountID, NetworkApplicationProtocoVersion, HttpRequestXff, CaptchaSupport, ClientApp, ClientAppSig, CookiesSupport, SrcGeoLatitude, SrcGeoLongitude, VisitorID\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

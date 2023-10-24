@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(AliCloud')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "AliCloud",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "AliCloud",
+        "query": "AliCloud_CL\n| extend EventVendor = 'Alibaba Cloud',\n         EventProduct = 'Alibaba Cloud',\n         EventCount = 1,\n         CreatedAt = unixtime_seconds_todatetime(timestamp_d)\n| extend d=parse_json(contents_event_s)\n| evaluate bag_unpack(d)\n| extend ContentTopic = contents___topic___s,\n        SourceName = source_s,\n        ContentTagPackId = contents___tag_____pack_id___s\n|project-away   timestamp_d,\n                contents_event_s,\n                contents___topic___s,\n                source_s,\n                contents___tag_____pack_id___s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

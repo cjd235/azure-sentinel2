@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6c8770fb-c854-403e-a64d-0293ba344d5f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6c8770fb-c854-403e-a64d-0293ba344d5f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Ransomware Attack Detected",
+        "description": "Identifies ransomware attacks detected by the Ransomware Protection service running on a Nasuni Edge Appliance.",
+        "severity": "High",
+        "enabled": true,
+        "query": "Syslog\n| project TimeGenerated, Computer, SyslogMessage\n| where SyslogMessage has \"The Filer has detected a new ransomware attack\"\n| extend pattern = substring(SyslogMessage, indexof(SyslogMessage, \"(\")+1, indexof(SyslogMessage, \")\") - indexof(SyslogMessage,\"(\")-1)\n| extend volume_name = substring(SyslogMessage, indexof(SyslogMessage, \"volume\")+7, indexof(SyslogMessage,\". Visit\") - (indexof(SyslogMessage, \"volume\")+7))\n| sort by TimeGenerated desc",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT5H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1486"
+        ],
+        "alertRuleTemplateName": "6c8770fb-c854-403e-a64d-0293ba344d5f",
+        "incidentConfiguration": {
+          "groupingConfiguration": {
+            "lookbackDuration": "PT5H",
+            "matchingMethod": "AllEntities",
+            "enabled": false,
+            "reopenClosedIncident": false
+          },
+          "createIncident": true
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "RemediationSteps",
+              "value": "SyslogMessage"
+            }
+          ],
+          "alertDescriptionFormat": "Ransomware attack detected by Nasuni at {{TimeGenerated}}.",
+          "alertnameFormat": "Nasuni: Ransomware Attack Detected"
+        },
+        "customDetails": {
+          "VolumeName": "volume_name"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "pattern"
+              }
+            ],
+            "entityType": "Malware"
+          }
+        ],
+        "templateVersion": "1.0.1",
+        "status": "Available"
+      }
+    }
+  ]
+}

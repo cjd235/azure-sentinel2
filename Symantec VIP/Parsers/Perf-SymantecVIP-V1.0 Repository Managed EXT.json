@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SymantecVIP')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SymantecVIP",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SymantecVIP",
+        "query": "Syslog \n| where Computer in (\"datasource\") and Facility == \"local5\"\n| extend parser = extract_all(@'^([A-Z]+)\\s\\\"([0-9\\.\\-\\s\\:GMT]+)\\\"\\s(\\S+)\\s([\\w]+)\\:(\\d+)\\s(\\d+)\\s(\\d+)\\s(\\d+)\\s\\\"text\\=([\\S\\s]+)\\\"\\sThread-(\\d+)\\s(.*)',dynamic([1,2,3,4,5,6,7,8,9,10,11]), SyslogMessage)\n| mv-expand todynamic(parser)\n| extend \n    LogLevel = tostring(parser[0]),\n    LogTime = todatetime(parser[1]),\n    ClientIP = tostring(parser[2]),\n    Component = tostring(parser[3]),\n    TransactionID = tostring(parser[5]),\n    SessionID= tostring(parser[7]),\n    ErrorCode = tostring(parser[6]),\n    RawMessage = split(tostring(parser[8]),\",\"),\n    ThreadID = tostring(parser[9]),\n    SourceClassName = tostring(parser[10])\n| extend Message = extract(@\"([\\w\\s\\-\\_\\[\\]\\\\]+)\\.\",1,tostring(RawMessage[0]))\n| extend User = extract(@\"(for\\s)?(U|u)ser\\s\\[(\\S+)\\]\",3,tostring(RawMessage[0]))\n| extend Reason = extract(@'reason=(\\d+)+\\s([\\w\\s]+)',2,tostring(RawMessage[1]))\n| extend TokenID = extract(@'tokenid=([A-Z0-9]+)',1,tostring(RawMessage[1]))\n| extend AccessResult = extract(@\"Access\\s(GRANTED|DENIED)\",1,tostring(RawMessage[0]))\n| extend AuthResult = extract(@\"Authentication\\s(\\S+)\\s\",1,tostring(RawMessage[0]))\n| extend StatusMessage = extract(@'StatusMessage:\\s(0x0:\\s)?([\\w\\s]+)[&.\"]',2,tostring(RawMessage[1]))\n| extend RADIUSAuth = extract(@'Acces-(\\S+)\\s',1,tostring(RawMessage[0]))\n| extend StatusCode = extract(@'StatusCode\\:\\s(\\d+)',1,tostring(RawMessage[0]))\n| project-away parser\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

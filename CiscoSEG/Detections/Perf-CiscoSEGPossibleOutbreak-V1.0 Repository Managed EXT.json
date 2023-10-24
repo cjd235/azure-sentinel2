@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/53242559-95ea-4d4c-b003-107e8f06304b')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/53242559-95ea-4d4c-b003-107e8f06304b')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco SEG - Possible outbreak",
+        "description": "'Detects possible outbreak activity.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "CiscoSEGEvent\n| where NetworkDirection =~ 'Incoming'\n| where tostring(AdditionalFields) has 'ESAOFVerdict'\n| extend of_verdict = extract(@'ESAOFVerdict\":\"(NOT_EVALUATED|POSITIVE|NEGATIVE)\"', 1, tostring(AdditionalFields))\n| where of_verdict =~ 'POSITIVE'\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1566"
+        ],
+        "alertRuleTemplateName": "53242559-95ea-4d4c-b003-107e8f06304b",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

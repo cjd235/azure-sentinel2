@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/43889f30-7bce-4d8a-93bb-29c9615ca8dd')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/43889f30-7bce-4d8a-93bb-29c9615ca8dd')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "VMware ESXi - VM stopped",
+        "description": "'Detects when VM was stopped.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "VMwareESXi\n| where SyslogMessage has ('VmPoweredOffEvent')\n| extend SrcUsername = extract(@'\\[info\\]\\s+\\[(.*?)\\]', 1, SyslogMessage)\n| extend DstHostname = extract(@'\\[\\d+\\]\\s+\\[(.*?)\\s+on', 1, SyslogMessage)\n| extend HostCustomEntity = DstHostname, AccountCustomEntity = SrcUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1529"
+        ],
+        "alertRuleTemplateName": "43889f30-7bce-4d8a-93bb-29c9615ca8dd",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

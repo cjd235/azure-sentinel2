@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/5223c1b8-75ef-4019-9076-a19b1ef3e5d1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/5223c1b8-75ef-4019-9076-a19b1ef3e5d1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "McAfee ePO - Scanning engine disabled",
+        "description": "'Detects when OAS scanning engine was disabled.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "McAfeeEPOEvent\n| where EventId == '1127'\n| extend IPCustomEntity = DvcIpAddr, HostCustomEntity = DvcHostname\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562",
+          "T1070"
+        ],
+        "alertRuleTemplateName": "5223c1b8-75ef-4019-9076-a19b1ef3e5d1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

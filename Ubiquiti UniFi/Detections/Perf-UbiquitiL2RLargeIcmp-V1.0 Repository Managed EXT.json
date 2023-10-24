@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6df85d74-e32f-4b71-80e5-bfe2af00be1c')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6df85d74-e32f-4b71-80e5-bfe2af00be1c')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Ubiquiti - Large ICMP to external server",
+        "description": "'Detects large ICMP packets to external host.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "UbiquitiAuditEvent\n| where EventCategory =~ 'firewall'\n| where ipv4_is_private(SrcIpAddr)\n| where ipv4_is_private(DstIpAddr) == 'False'\n| where NetworkProtocol =~ 'ICMP'\n| summarize avg_packet_length = avg(toint(NetworkBytes))\n| extend a = 1\n| join (UbiquitiAuditEvent\n  | where EventCategory =~ 'firewall'\n  | where ipv4_is_private(SrcIpAddr)\n  | where ipv4_is_private(DstIpAddr) == 'False'\n  | where NetworkProtocol =~ 'ICMP'\n  | extend a = 1) on a\n| where toint(NetworkBytes) > 2*avg_packet_length\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration",
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1041",
+          "T1572"
+        ],
+        "alertRuleTemplateName": "6df85d74-e32f-4b71-80e5-bfe2af00be1c",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

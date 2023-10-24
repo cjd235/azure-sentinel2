@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c2f93727-e4b0-4cb9-8f80-f52ebbd96ece')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c2f93727-e4b0-4cb9-8f80-f52ebbd96ece')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Snowflake - Possible data destraction",
+        "description": "'Detects possible data destruction.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\nSnowflake\n| where QUERY_TYPE_s =~ 'DROP'\n| where EXECUTION_STATUS_s =~ 'SUCCESS'\n| summarize count() by TargetUsername, bin(TimeGenerated, 5m)\n| where count_ > threshold\n| extend AccountCustomEntity = TargetUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1485"
+        ],
+        "alertRuleTemplateName": "c2f93727-e4b0-4cb9-8f80-f52ebbd96ece",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

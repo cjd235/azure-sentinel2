@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4e8032eb-f04d-4a30-85d3-b74bf2c8f204')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4e8032eb-f04d-4a30-85d3-b74bf2c8f204')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Imperva - Multiple user agents from same source",
+        "description": "''Detects suspicious number of user agents from the same IP address.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\nImpervaWAFCloud\n| summarize d_uas = dcount(HttpUserAgentOriginal) by SrcIpAddr, bin(TimeGenerated, 5m)\n| where d_uas >= threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "4e8032eb-f04d-4a30-85d3-b74bf2c8f204",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

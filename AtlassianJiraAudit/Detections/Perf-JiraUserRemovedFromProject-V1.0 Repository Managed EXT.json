@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/5d3af0aa-833e-48ed-a29a-8cfd2705c953')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/5d3af0aa-833e-48ed-a29a-8cfd2705c953')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Jira - User removed from project",
+        "description": "'Detects when a user was removed from project.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "JiraAudit\n| where EventMessage =~ 'User removed from project'\n| extend user = todynamic(AssociatedItems)[0]['name']\n| project EventCreationTime, ObjectItemName, user\n| extend AccountCustomEntity = user\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1531"
+        ],
+        "alertRuleTemplateName": "5d3af0aa-833e-48ed-a29a-8cfd2705c953",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

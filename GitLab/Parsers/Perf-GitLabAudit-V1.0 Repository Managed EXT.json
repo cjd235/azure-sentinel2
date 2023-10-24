@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GitLabAudit')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GitLabAudit",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GitLabAudit",
+        "query": "Syslog\n| where Facility == 'local7'\n| where ProcessName == 'GitLab-Audit-Logs'\n| extend parsedMessage = parse_json(SyslogMessage)\n| project TimeGenerated, \n  Severity = parsedMessage.severity,\n  EventTime = todatetime(parsedMessage.['time']),\n  CorrelationID = parsedMessage.correlation_id,\n  AuthorID = tostring(parsedMessage.author_id),\n  AuthorName = tostring(parsedMessage.author_name),\n  EntityID = parsedMessage.entity_id,\n  EntityType = parsedMessage.entity_type,\n  IPAddress = parsedMessage.ip_address,\n  AddAction = parsedMessage.['add'],\n  DelAction = parsedMessage.['del'],\n  RemoveAction = parsedMessage.['remove'],\n  TargetID = tostring(parsedMessage.target_id),\n  TargetType = tostring(parsedMessage.target_type),\n  TargetDetails = tostring(parsedMessage.target_details),\n  EntityName = tostring(parsedMessage.entity_path),\n  Action = tostring(parsedMessage.action),\n  CustomMessage = tostring(parsedMessage.custom_message),\n  AuthenticationType = tostring(parsedMessage.['with']),\n  SourceVisibility = tostring(parsedMessage.From),\n  TargetVisibility = tostring(parsedMessage.To),\n  ChangeType = tostring(parsedMessage.change)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

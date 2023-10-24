@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/46b6c6fc-2c1a-4270-be10-9d444d83f027')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/46b6c6fc-2c1a-4270-be10-9d444d83f027')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco WSA - Multiple attempts to download unwanted file",
+        "description": "'Detects when multiple attempts to download unwanted file occur.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 2;\nCiscoWSAEvent\n| where DvcAction =~ 'BLOCK_ADMIN_FILE_TYPE'\n| summarize i_src = makeset(SrcIpAddr) by UrlOriginal, bin(TimeGenerated, 15m)\n| where array_length(i_src) >= threshold\n| extend IPCustomEntity = i_src, UrlCustomEntity = UrlOriginal\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1189"
+        ],
+        "alertRuleTemplateName": "46b6c6fc-2c1a-4270-be10-9d444d83f027",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

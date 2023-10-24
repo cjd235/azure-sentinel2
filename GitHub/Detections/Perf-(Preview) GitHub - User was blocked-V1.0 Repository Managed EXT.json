@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0b85a077-8ba5-4cb5-90f7-1e882afe10c8')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0b85a077-8ba5-4cb5-90f7-1e882afe10c8')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "(Preview) GitHub - User was blocked",
+        "description": "'Detect activities when a user was blocked on the repository. This query runs every day and its severity is Medium.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "GitHubAuditData\n| where Action == \"org.block_user\"\n| project Actor, Action \n| extend AccountCustomEntity = Actor\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P7D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "0b85a077-8ba5-4cb5-90f7-1e882afe10c8",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

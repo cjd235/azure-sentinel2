@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightFindingsSummary')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightFindingsSummary",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightFindingsSummary",
+        "query": "let FindingsSummary_view  = view () {\n    Findings_summary_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"FindingsSummary\",\n                Company = column_ifexists('Company_s', ''),\n                Confidence = column_ifexists('confidence_s', ''),\n                EndDate = column_ifexists('end_date_s', ''),\n                EventCount = column_ifexists('event_count_d', ''),\n                FirstSeen = column_ifexists('first_seen_s', ''),\n                HostCount = column_ifexists('host_count_d', ''),\n                Id = column_ifexists('id_s', ''),\n                Name = column_ifexists('name_s', ''),\n                Severity = column_ifexists('severity_s', ''),\n                StartDate = column_ifexists('start_date_s', ''),\n                Description = column_ifexists('description_s', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                Company,\n                Confidence,\n                EndDate,\n                EventCount,\n                FirstSeen,\n                HostCount,\n                Id,\n                Name,\n                Severity,\n                StartDate,\n                Description,\n                Type\n};\nFindingsSummary_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

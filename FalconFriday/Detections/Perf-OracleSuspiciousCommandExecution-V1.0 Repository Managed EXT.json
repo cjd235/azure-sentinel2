@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e6c5ff42-0f42-4cec-994a-dabb92fe36e1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e6c5ff42-0f42-4cec-994a-dabb92fe36e1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Oracle suspicious command execution",
+        "description": "The query searches process creation events that are indicative of an attacker spawning OS commands from an Oracle database.\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let timeframe= 1h;\nDeviceProcessEvents\n| where Timestamp >= ago(timeframe)\n| where InitiatingProcessFileName =~ \"oracle.exe\"\n| where not(FileName in~ (\"conhost.exe\", \"oradim.exe\"))\n// Begin allow-list.\n// End allow-list.\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement",
+          "PrivilegeEscalation"
+        ],
+        "techniques": [
+          "T1210",
+          "T1611"
+        ],
+        "alertRuleTemplateName": "e6c5ff42-0f42-4cec-994a-dabb92fe36e1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DeviceName"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Sid",
+                "columnName": "AccountSid"
+              },
+              {
+                "identifier": "Name",
+                "columnName": "AccountName"
+              },
+              {
+                "identifier": "NTDomain",
+                "columnName": "AccountDomain"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "ProcessCommandLine"
+              }
+            ],
+            "entityType": "Process"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

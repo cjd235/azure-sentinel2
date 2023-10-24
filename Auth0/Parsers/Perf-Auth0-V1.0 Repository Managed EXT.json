@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Auth0')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Auth0",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Auth0",
+        "query": "union isfuzzy=true Auth0AM_CL, Auth0_CL\n| project-rename EventType = type_s,\n    HttpRequestMethod = details_request_method_s,\n    ActorSessionId = _id_s,\n    HttpUserAgent =  user_agent_s,\n    TargetUsername = user_name_s,\n    ActorUserId = client_id_s,\n    IpAddr=ip_s,\n    Dst = details_request_body_audience_s,\n    EventEndTime = date_t,\n    EventResultDetails = details_response_statusCode_d\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

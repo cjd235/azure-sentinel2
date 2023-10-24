@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bda5a2bd-979b-4828-a91f-27c2a5048f7f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bda5a2bd-979b-4828-a91f-27c2a5048f7f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "ProofpointPOD - Multiple archived attachments to the same recipient",
+        "description": "'Detects when multiple emails where sent to the same recipient with large archived attachments.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lbtime = 30m;\nlet msgthreshold = 3;\nlet compressedTypes = dynamic(['zip', 'rar', 'tar', 'x-7z-compressed']);\nProofpointPOD\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'message'\n| where NetworkDirection == 'outbound'\n| extend attachedMimeType = todynamic(MsgParts)[0]['detectedMime']\n| where attachedMimeType has_any (compressedTypes)\n| summarize count(), make_set(attachedMimeType) by SrcUserUpn, DstUserUpn\n| where count_ > msgthreshold\n| extend AccountCustomEntity = SrcUserUpn\n",
+        "queryFrequency": "PT30M",
+        "queryPeriod": "PT30M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1567"
+        ],
+        "alertRuleTemplateName": "bda5a2bd-979b-4828-a91f-27c2a5048f7f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.2"
+      }
+    }
+  ]
+}

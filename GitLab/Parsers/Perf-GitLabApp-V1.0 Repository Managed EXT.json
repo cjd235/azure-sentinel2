@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GitLabApp')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GitLabApp",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GitLabApp",
+        "query": "Syslog\n| where Facility == 'local7'\n| where ProcessName == 'GitLab-Application-Logs'\n| extend parsedMessage = parse_json(SyslogMessage)\n| project TimeGenerated, \n  Severity = parsedMessage.severity,\n  Computer,\n  HostName,\n  HostIP,\n  EventTime = todatetime(parsedMessage.['time']),\n  CorrelationID = parsedMessage.correlation_id,\n  Message = parsedMessage.message,\n  FailedLogin = iff(parsedMessage hasprefix_cs \"Failed Login\",1,0),\n  UserAdded = iff(parsedMessage hassuffix_cs \"was created\",1,0),\n  UserImpersonated = iff(parsedMessage matches regex \".*impersonating.*\",1,0)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

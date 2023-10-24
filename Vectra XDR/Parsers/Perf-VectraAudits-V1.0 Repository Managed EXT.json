@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VectraAudits')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VectraAudits",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VectraAudits",
+        "query": "let VectraAudits_view  = view () { \n    Audits_Data_CL\n    | extend \n        EventVendor=\"VectraAudits\",\n        EventProduct=\"VectraAudits\",\n        ID = column_ifexists('id_d', ''),\n        [\"User ID\"] = column_ifexists('user_id_d', ''),\n        Username = column_ifexists('username_s', ''),\n        [\"User Type\"] = column_ifexists('user_type_s', ''),\n        [\"User Role\"] = column_ifexists('user_role_s', ''),\n        Version = column_ifexists('version_s', ''),\n        [\"Source IP\"] = column_ifexists('source_ip_s', ''),\n        [\"Event Timestamp\"] = column_ifexists('event_timestamp_t', ''),\n        Message = column_ifexists('Message', ''),\n        Status = column_ifexists('result_status_s', ''),\n        [\"Event Data\"] = column_ifexists('event_data_s', ''),\n        [\"Event Object\"] = column_ifexists('event_object_s', ''),\n        [\"Event Action\"] = column_ifexists('event_action_s', ''),\n        [\"API Client ID\"] = column_ifexists('api_client_id_g', '')\n    | project\n        TimeGenerated,\n        EventVendor,\n        EventProduct,\n        ID,\n        ['User ID'],\n        Username,\n        ['User Type'],\n        [\"User Role\"],\n        Version,\n        ['Source IP'],\n        ['Event Timestamp'],\n        Message,\n        Status,\n        [\"Event Data\"],\n        ['Event Object'],\n        ['Event Action'],\n        ['API Client ID']\n};\nVectraAudits_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

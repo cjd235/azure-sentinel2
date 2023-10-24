@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1a6d0a49-64b3-4ca1-96c3-f154c16c218c')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1a6d0a49-64b3-4ca1-96c3-f154c16c218c')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Semperis DSP Mimikatz's DCShadow Alert",
+        "description": "'Mimikatz's DCShadow switch allows a user who has compromised an AD domain, to inject arbitrary changes into AD using a \"fake\" domain controller. These changes bypass the security event log and can't be spotted using normal AD tools. This rule looks for evidence that a machine has been used in this capacity.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "dsp_parser\n| where EventID == 9212\n| where SecurityIndicatorName == \"Evidence of Mimikatz DCShadow attack\"\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1207"
+        ],
+        "alertRuleTemplateName": "1a6d0a49-64b3-4ca1-96c3-f154c16c218c",
+        "customDetails": null,
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

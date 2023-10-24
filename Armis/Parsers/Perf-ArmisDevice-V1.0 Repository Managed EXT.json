@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ArmisDevice')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ArmisDevice",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ArmisDevice",
+        "query": "let ArmisDevice_view  = view () {\n    Armis_Devices_CL\n    | extend\n                EventVendor=\"ArmisDevice\",\n                EventProduct=\"ArmisDevice\",\n                Category = column_ifexists('Category', ''),\n                FirmwareVersion = column_ifexists('firmwareVersion_s', ''),\n                FirstSeen = column_ifexists('firstSeen_t', ''),\n                Id = column_ifexists('id_d', ''),\n                IPAddress = column_ifexists('IPAddress', ''),\n                LastSeen = column_ifexists('lastSeen_t', ''),\n                MacAddress = column_ifexists('macAddress_s', ''),\n                Manufacturer = column_ifexists('manufacturer_s', ''),\n                Model = column_ifexists('model_s', ''),\n                OperatingSystemVersion = column_ifexists('operatingSystemVersion_s', ''),\n                OperatingSystem = column_ifexists('operatingSystem_s', ''),\n                PlcModule = column_ifexists('plcModule_s', ''),\n                PurdueLevel = column_ifexists('purdueLevel_d', ''),\n                RiskLevel = column_ifexists('riskLevel_d', ''),\n                SensorName = column_ifexists('sensor_name_s', ''),\n                SensorType = column_ifexists('sensor_type_s', ''),\n                SiteLocation = column_ifexists('site_location_s', ''),\n                SiteName = column_ifexists('site_name_s', ''),\n                Tags = column_ifexists('tags_s', ''),\n                Type = column_ifexists('type_s', ''),\n                Visibility = column_ifexists('visibility_s', ''),\n                Name = column_ifexists('name_s', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                Category,\n                FirmwareVersion,\n                FirstSeen,\n                Id,\n                IPAddress,\n                LastSeen,\n                MacAddress,\n                Manufacturer,\n                Model,\n                OperatingSystemVersion,\n                OperatingSystem,\n                PlcModule,\n                PurdueLevel,\n                RiskLevel,\n                SensorName,\n                SensorType,\n                SiteLocation,\n                SiteName,\n                Tags,\n                Type,\n                Visibility,\n                Name\n};\nArmisDevice_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

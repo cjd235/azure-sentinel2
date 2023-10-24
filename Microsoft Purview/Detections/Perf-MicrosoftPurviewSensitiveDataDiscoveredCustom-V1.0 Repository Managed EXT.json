@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/79f296d9-e6e4-45dc-9ca7-1770955435fa')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/79f296d9-e6e4-45dc-9ca7-1770955435fa')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Sensitive Data Discovered in the Last 24 Hours - Customized",
+        "description": "'Customized query used to identify specific classifications and parameters that have been discovered on assets in the last 24 hours by Microsoft Purview. By default, the query identifies Social Security Numbers detected, but the specific classification monitored along with other data fields can be adjusted. A list of supported Microsoft Purview classifications can be found here: https://docs.microsoft.com/azure/purview/supported-classifications'\n",
+        "severity": "Informational",
+        "enabled": true,
+        "query": "PurviewDataSensitivityLogs\n| where Classification contains \"Social Security Number\"\n//| where SourceRegion == \"westeurope\"\n//| where SourceType contains \"Amazon\"\n| where TimeGenerated > ago(24h)\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1087"
+        ],
+        "alertRuleTemplateName": "79f296d9-e6e4-45dc-9ca7-1770955435fa",
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "Within the last 24 hours, Microsoft Purview scanned assets that contained classifications. The classifications discovered include {{Classification}}.",
+          "alertDisplayNameFormat": "Sensitive Data Discovered in the Last 24 Hours by Microsoft Purview"
+        },
+        "customDetails": {
+          "AssetName": "AssetName",
+          "LastScanTime": "AssetLastScanTime",
+          "SourceRegion": "SourceRegion",
+          "AssetPath": "AssetPath",
+          "Classification": "Classification",
+          "PurviewAccount": "PurviewAccountName"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "ResourceId",
+                "columnName": "SourcePath"
+              }
+            ],
+            "entityType": "AzureResource"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AssetName"
+              }
+            ],
+            "entityType": "File"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "PurviewAccountName"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

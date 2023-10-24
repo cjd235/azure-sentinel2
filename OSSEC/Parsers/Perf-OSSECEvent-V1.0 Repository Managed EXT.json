@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(OSSECEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "OSSECEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "OSSECEvent",
+        "query": "CommonSecurityLog\n| where DeviceVendor has 'OSSEC'\n| extend EventVendor = DeviceVendor\n| extend EventProduct = DeviceProduct\n| extend EventProductVersion = DeviceVersion\n| extend RuleName = Activity\n| extend RuleNumber = DeviceEventClassID\n| extend Classification = coalesce(\n                            extract(@'(classification|cat)=(\\s)?(.*?)(,$|;|$)', 3, AdditionalExtensions),                            \n                            column_ifexists(\"DeviceEventCategory\", \"\")\n                        )\n| extend DvcHostname = DeviceAddress\n| extend EventSeverity = LogSeverity\n| extend SrcIpAddr = SourceIP\n| extend SrcHostname = SourceHostName\n| extend SrcUserName = SourceUserName\n| extend EventMessage = Message\n| extend FilePath = FileName\n| extend FileHashSha1 = FileHash\n| extend OldFileHashSha1 = OldFileHash\n| project TimeGenerated\n        , EventVendor\n        , EventProduct\n        , EventProductVersion\n        , RuleName\n        , RuleNumber\n        , Classification\n        , DvcHostname\n        , EventSeverity\n        , SrcIpAddr\n        , SrcHostname\n        , SrcUserName\n        , EventMessage\n        , FilePath\n        , OldFileHashSha1\n        , FileHashSha1\n        , DeviceCustomString1Label\n        , DeviceCustomString1\n        , DeviceCustomString2Label\n        , DeviceCustomString2\n        , DeviceCustomString3Label\n        , DeviceCustomString3\n        , DeviceCustomString4Label\n        , DeviceCustomString4\n        , DeviceCustomString5Label\n        , DeviceCustomString5\n        , DeviceCustomString6Label\n        , DeviceCustomString6\n        , AdditionalExtensions\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

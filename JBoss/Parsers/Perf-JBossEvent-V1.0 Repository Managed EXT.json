@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(JBossEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "JBossEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "JBossEvent",
+        "query": "JBossLogs_CL\n| extend EventVendor = 'Red Hat'\n| extend EventProduct = 'JBoss Enterprise Application Platform'\n| extend EventCount = 1\n| extend EventSchemaVersion = 0.2\n| extend EventSeverity = extract(@'\\d{2},\\d{3}\\s(\\w+)\\s+\\[', 1, RawData)\n| extend ActingProcessName = extract(@'\\[([A-Za-z0-9.-]+)\\]', 1, RawData)\n| extend ActingProcessThread = extract(@'\\]\\s+\\((.*?)\\)', 1, RawData)\n| extend EventOriginalType = extract(@\"([A-Z]+[0-9]+)(:)\",1, RawData)\n| extend EventMessage = extract(@'\\)\\s([A-Z0-9]+:\\s)?(.*)', 2, RawData)\n| project-away RawData\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

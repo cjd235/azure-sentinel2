@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Fortiweb')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Fortiweb",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Fortiweb",
+        "query": "CommonSecurityLog\n| project-away EventType\n| where DeviceVendor =~ 'Fortinet' and DeviceProduct has 'Fortiweb'\n| extend EventVendor = 'Fortinet'\n| extend EventProduct = 'Fortiweb'\n| extend EventSchemaVersion = 0.2\n| extend EventCount = 1\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n         DeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3),\n         ExternalID = coalesce(column_ifexists(\"ExtID\", \"\"),tostring(ExternalID))\n| extend Threatweight = iff(DeviceCustomNumber1Label =~ \"threatWeight\",DeviceCustomNumber1,long(null))\n         ,Length = iff(DeviceCustomNumber2Label =~ \"length\",DeviceCustomNumber2,long(null))\n         ,SignatureID = iff(DeviceCustomNumber3Label =~ \"signatureID\",DeviceCustomNumber3,long(null))\n         ,AppName = iff(DeviceCustomString1Label =~ \"appName\",DeviceCustomString1,'')\n         ,srcCountry = iff(DeviceCustomString2Label =~ \"srcCountry\",DeviceCustomString2,'')\n         ,mainType = iff(DeviceCustomString3Label =~ \"mainType\",DeviceCustomString3,'')\n         ,subType = iff(DeviceCustomString4Label =~ \"subType\",DeviceCustomString4,'')\n         ,ThreatLevel = iff(DeviceCustomString5Label =~ \"threatLevel\",DeviceCustomString5,'')\n         ,owaspTop10 = iff(DeviceCustomString6Label =~ \"owaspTop10\",DeviceCustomString6,'')\n| parse-kv AdditionalExtensions as (cat:string) with (pair_delimiter=';', kv_delimiter='=')\n| extend EventEndTime = todatetime(ReceiptTime),\n         EventType = coalesce(column_ifexists(\"DeviceEventCategory\", \"\"),cat)\n| project-rename EventProductVersion=DeviceVersion\n                , EventOriginalType=DeviceEventClassID\n                , EventSeverity=LogSeverity\n                , EventMessage=Message\n                , DstPortNumber=DestinationPort\n                , DstIpAddr=DestinationIP\n                , DstDvcHostname=DestinationHostName\n                , DstUserName=DestinationUserName\n                , DvcIpAddr=DeviceAddress\n                , DvcAction=DeviceAction\n                , DvcHostname=DeviceName\n                , DstMacAddr=DestinationMACAddress\n                , NetworkApplicationProtocol=Protocol\n                , SrcPortNumber=SourcePort\n                , SrcIpAddr=SourceIP\n                , SrcMacAddr=SourceMACAddress\n                , EventId=ExternalID\n                , SrcDvcHostname=SourceHostName\n                , EventSubType=Activity\n| project-away AdditionalExtensions\n            , ReceiptTime\n            , cat\n            , Device*\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

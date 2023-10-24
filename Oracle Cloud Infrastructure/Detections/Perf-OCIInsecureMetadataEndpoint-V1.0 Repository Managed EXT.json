@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9c4b1b9c-6462-41ce-8f2e-ce8c104331fc')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9c4b1b9c-6462-41ce-8f2e-ce8c104331fc')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "OCI - Insecure metadata endpoint",
+        "description": "'Detects insecure metadata endpoint.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "OCILogs\n| where data_request_headers_oci_original_url_s contains '/opc/v1' or data_request_headers_oci_original_url_s contains '/openstack'\n| where HttpStatusCode == 200\n| extend IPCustomEntity = DstIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1069"
+        ],
+        "alertRuleTemplateName": "9c4b1b9c-6462-41ce-8f2e-ce8c104331fc",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

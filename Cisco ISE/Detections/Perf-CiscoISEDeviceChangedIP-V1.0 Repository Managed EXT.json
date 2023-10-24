@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0c509e9b-121e-4951-9f9b-43722e052b4f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0c509e9b-121e-4951-9f9b-43722e052b4f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "CiscoISE - Device changed IP in last 24 hours",
+        "description": "'Detects when device changes IP address in last 24 hours.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lbtime_48h = 48h;\nlet lbtime_24h = 24h;\nCiscoISEEvent\n| where TimeGenerated between (ago(lbtime_48h) .. ago(lbtime_24h))\n| where notempty(DvcIpAddr) and notempty(DvcHostname)\n| summarize knownIPs = make_set(DvcIpAddr) by DvcHostname\n| join (CiscoISEEvent\n      | where TimeGenerated > ago(lbtime_24h)\n      | where notempty(DvcIpAddr) and notempty(DvcHostname)\n      | summarize evts = count() by DvcHostname, DvcIpAddr\n      | project-away evts) on DvcHostname\n| project-away DvcHostname1\n| where knownIPs !contains DvcIpAddr\n| extend HostCustomEntity = DvcHostname\n| extend IPCustomEntity = DvcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "0c509e9b-121e-4951-9f9b-43722e052b4f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

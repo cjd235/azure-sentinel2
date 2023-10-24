@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ExchangeAdminAuditLogs')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ExchangeAdminAuditLogs",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ExchangeAdminAuditLogs",
+        "query": "let cVIPs = _GetWatchlist('ExchangeVIP') | project tostring(canonicalName) ;\nlet sVIPs = _GetWatchlist('ExchangeVIP') | project tostring(sAMAccountName) ;\nlet CmdletCheck = externaldata (Cmdlet:string, UserOriented:string, RestrictToParameter:string, Parameters:string)[h\"https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/Watchlists/CmdletWatchlist.csv\"]with(format=\"csv\",ignoreFirstRecord=true);\nlet SensitiveCmdlets = externaldata (Cmdlet:string, UserOriented:string, RestrictToParameter:string, Parameters:string)[h\"https://raw.githubusercontent.com/nlepagnez/ESI-PublicContent/main/Operations/Watchlists/CmdletWatchlist.csv\"]with(format=\"csv\",ignoreFirstRecord=true) | project tostring(Cmdlet) ;\nlet Env = ExchangeConfiguration(SpecificSectionList=\"ESIEnvironment\")\n| extend DomainFQDN_ = tostring(CmdletResultValue.DomainFQDN)\n| project DomainFQDN_, ESIEnvironment;\nlet MSExchange_Management = (){\n    Event\n    | where EventLog == 'MSExchange Management'\n    | where EventID in (1,6) // 1 = Success, 6 = Failure\n    | parse ParameterXml with '<Param>' CmdletName '</Param><Param>' CmdletParameters '</Param><Param>' Caller '</Param><Param>' *\n    | extend TargetObject = iif( CmdletParameters has \"-Identity \", split(split(CmdletParameters,'-Identity ')[1],'\"')[1], iif( CmdletParameters has \"-Name \", split(split(CmdletParameters,'-Name ')[1],'\"')[1], \"\"))\n    | extend Status = case( EventID == 1, 'Success', 'Failure')\n    | extend IsVIP = iif(TargetObject in (cVIPs) or TargetObject in (sVIPs), true, false)\n    | extend CmdletNameJoin = tolower(CmdletName)\n    | join kind=leftouter  ( \n        CmdletCheck\n    | extend CmdletNameJoin = tolower(Cmdlet)\n    ) on CmdletNameJoin\n    | extend DomainEnv = replace_string(Computer,strcat(tostring(split(Computer,'.',0)[0]),'.'),'')\n    | join kind=leftouter  ( \n        Env\n    ) on $left.DomainEnv == $right.DomainFQDN_\n    | extend ESIEnvironment = iif (isnotempty(ESIEnvironment), ESIEnvironment, strcat(\"Unknown-\",DomainEnv))\n    | extend IsSenstiveCmdlet = iif( isnotempty(CmdletNameJoin1) , true, false) \n    | extend IsRestrictedCmdLet = iif(IsSenstiveCmdlet == true, iif( RestrictToParameter == \"Yes\", true, false), dynamic(null))\n    | extend RestrictedParameters = iif(IsSenstiveCmdlet == true, split(tolower(Parameters),';'), dynamic(null))\n    | extend ExtractedParameters = iif(IsSenstiveCmdlet == true,extract_all(@\"\\B(-\\w+)\", tolower(CmdletParameters)), dynamic(null))\n    | extend IsSenstiveCmdletParameters = iif(IsSenstiveCmdlet == true,iif( array_length(set_difference(ExtractedParameters,RestrictedParameters)) == array_length(ExtractedParameters), false, true ) , false)\n    | extend IsSensitive = iif( ( IsSenstiveCmdlet == true and IsRestrictedCmdLet == false ) or (IsSenstiveCmdlet == true and IsRestrictedCmdLet == true and IsSenstiveCmdletParameters == true ), true, false )\n    //| project TimeGenerated,Computer,Status,Caller,TargetObject,IsVIP,CmdletName,CmdletParameters,IsSenstiveCmdlet,IsRestrictedCmdLet,ExtractedParameters,RestrictedParameters,IsSenstiveCmdletParameters\n    | project TimeGenerated,Computer,Status,Caller,TargetObject,IsVIP,CmdletName,CmdletParameters,IsSenstiveCmdlet,IsRestrictedCmdLet,ExtractedParameters,RestrictedParameters,IsSenstiveCmdletParameters,IsSensitive,UserOriented, ESIEnvironment\n};\nMSExchange_Management\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

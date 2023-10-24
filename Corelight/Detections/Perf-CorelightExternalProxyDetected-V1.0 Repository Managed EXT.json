@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/05850746-9ae4-412f-838b-844f0903f4a9')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/05850746-9ae4-412f-838b-844f0903f4a9')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Corelight - External Proxy Detected",
+        "description": "'Detects external proxy usage.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "Corelight\n| where EventType =~ 'http'\n| where isnotempty(HttpProxiedHeaders)\n| where ipv4_is_private(SrcIpAddr) == 'False'\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion",
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1090"
+        ],
+        "alertRuleTemplateName": "05850746-9ae4-412f-838b-844f0903f4a9",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

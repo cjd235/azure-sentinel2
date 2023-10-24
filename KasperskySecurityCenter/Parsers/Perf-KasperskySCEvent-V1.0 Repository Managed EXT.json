@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(KasperskySCEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "KasperskySCEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "KasperskySCEvent",
+        "query": "CommonSecurityLog\n| where DeviceVendor =~ 'KasperskyLab'\n| extend EventVendor = 'KasperskyLab'\n| extend EventProduct = 'SecurityCenter'\n| extend EventSchemaVersion = 0.2\n| extend EventCount = 1\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n         DeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3)\n| extend ExtraAttributes = extract(@'cs7=(.*?);cs7Label', 1, AdditionalExtensions)\n| extend GroupName = extract(@'cs9=(.*?);cs9Label', 1, AdditionalExtensions)\n| extend Service = extract(@'cs10=(.*?);cs10Label', 1, AdditionalExtensions)\n| extend EventEndTime = todatetime(ReceiptTime)\n| extend ExternalID = coalesce(column_ifexists(\"ExtID\", \"\"),tostring(ExternalID))\n| project-rename EventProductVersion=DeviceVersion\n                , EventId=DeviceEventClassID\n                , EventSeverity=LogSeverity\n                , DstPortNumber=DestinationPort\n                , DstIpAddr=DestinationIP\n                , DstDvcHostname=DestinationHostName\n                , DstUserName=DestinationUserName\n                , DvcIpAddr=DeviceAddress\n                , DvcHostname=DeviceName\n                , NetworkApplicationProtocol=Protocol\n                , SrcPortNumber=SourcePort\n                , SrcIpAddr=SourceIP\n                , Id=ExternalID\n                , SrcDvcHostname=SourceHostName\n                , ProductName=DeviceCustomString2\n                , ProductVersion=DeviceCustomString3\n| extend ThreatName=case(EventId in~ ('GNRL_EV_VIRUS_FOUND_AND_BLOCKED', 'GNRL_EV_SUSPICIOUS_OBJECT_FOUND'), DeviceCustomString1, '')\n| extend ObjectName=case(EventId in~ ('GNRL_EV_VIRUS_FOUND_AND_BLOCKED', 'GNRL_EV_SUSPICIOUS_OBJECT_FOUND'), DeviceCustomString5, '')\n| extend DetectionType=case(EventId in~ ('GNRL_EV_VIRUS_FOUND_AND_BLOCKED', 'GNRL_EV_SUSPICIOUS_OBJECT_FOUND'), DeviceCustomString6, '')\n| extend TaskOldState=case(EventId =~ 'KLPRCI_TaskState', DeviceCustomNumber1, todynamic(''))\n| extend TaskNewState=case(EventId =~ 'KLPRCI_TaskState', DeviceCustomNumber2, todynamic(''))\n| extend TaskName=case(EventId =~ 'KLPRCI_TaskState', DeviceCustomString5, '')\n| extend TaskId=case(EventId =~ 'KLPRCI_TaskState', DeviceCustomString4, '')\n| extend EventOriginalResultDetails=Activity\n| extend ActingProcessFileProduct = extract(@'Application: (.*?)\\\\[rn]', 1, Message)\n| extend ActingProcessName = extract(@'Application\\\\Name: (.*?)\\\\[rn]', 1, Message)\n| extend ActingProcessId = extract(@'Process ID: (\\d+)\\\\[rn]', 1, Message)\n| extend EventResult = extract(@'Result\\\\\\\\Description: (\\w+)\\\\[rn]', 1, Message)\n| extend PossibleImpact = extract(@'Result\\\\\\\\Type: (.*?)\\\\[rn]', 1, Message)\n| extend ThreatLevel = extract(@'Threat level: (.*?)\\\\[rn]', 1, Message)\n| extend ResultPrecision = extract(@'Result\\\\\\\\Precision: (\\w+)\\\\[rn]', 1, Message)\n| extend Object = extract(@'Object: (.*?)\\\\[rn]', 1, Message)\n| extend ObjectType = extract(@'Object\\\\\\\\Type: (.*?)\\\\[rn]', 1, Message)\n| extend ObjectPath = extract(@'Object\\\\\\\\Path: (.*?)\\\\[rn]', 1, Message)\n| extend ObjectName = extract(@'Object\\\\\\\\Name: (.*?)\\\\[rn]', 1, Message)\n| extend EventReason = extract(@'Reason: (.*?)\\\\[rn]', 1, Message)\n| extend EventReason = coalesce(column_ifexists(\"Reason\",\"\"),EventReason)\n| extend DatabaseReleaseTime = todatetime(extract(@'Database release date: (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})', 1, replace_regex(Message, @'Database release date: (\\d{2})/(\\d{2})/(\\d{4}) (\\d{2}:\\d{2}:\\d{2})', @'Database release date: \\3-\\2-\\1 \\4')))\n| project-away Message\n            , Activity\n            , ReceiptTime\n            , DeviceVendor\n            , DeviceProduct\n            , DeviceCustomNumber1\n            , DeviceCustomNumber1Label\n            , DeviceCustomNumber2\n            , DeviceCustomNumber2Label\n            , DeviceCustomString1\n            , DeviceCustomString1Label\n            , DeviceCustomString2Label\n            , DeviceCustomString3Label\n            , DeviceCustomString4\n            , DeviceCustomString4Label\n            , DeviceCustomString5\n            , DeviceCustomString5Label\n            , DeviceCustomString6\n            , DeviceCustomString6Label\n            , AdditionalExtensions\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

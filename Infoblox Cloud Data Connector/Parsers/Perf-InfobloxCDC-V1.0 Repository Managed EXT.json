@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(InfobloxCDC')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "InfobloxCDC",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "InfobloxCDC",
+        "query": "CommonSecurityLog\n| where DeviceVendor == \"Infoblox\" and DeviceProduct == \"Data Connector\"\n| extend AEcopy = AdditionalExtensions\n//Remove DHCP Option codes at end of DHCP logs to prevent invalid chars in fieldnames, causing errors. If you require these advanced fields, remove the following line.\n| extend AEcopy = trim_end(\"InfobloxDHCPOptions=;(.*?)\",AEcopy)\n| extend AEcopy = extract_all(@\"(?P<key>[^=;]+)=(?P<value>[^=;]+)\", dynamic([\"key\",\"value\"]), AEcopy)\n| mv-apply AEcopy on (\n    summarize AdditionalExtensionsParsedNested = make_bag(pack(tostring(AEcopy[0]), AEcopy[1]))\n)\n| extend AdditionalExtensionsParsed = AdditionalExtensionsParsedNested\n| evaluate bag_unpack(AdditionalExtensionsParsed)\n| extend ThreatLevel_Score = toint(column_ifexists(\"InfobloxThreatLevel\", \"\"))\n| extend ThreatLevel = case(ThreatLevel_Score>=80, \"High\",\n                       ThreatLevel_Score>=30 and ThreatLevel_Score<80, \"Medium\",\n                       ThreatLevel_Score<30 and ThreatLevel_Score>=1, \"Low\",\n                       ThreatLevel_Score == 0,\"Info\",\n                       \"N/A\" )\n| extend ThreatClass = extract(\"(.*?)_\", 1, tostring(column_ifexists(\"InfobloxThreatProperty\", \"\")))\n| extend ThreatProperty = extract(\"([^_]*$)\", 1, tostring(column_ifexists(\"InfobloxThreatProperty\", \"\")))\n| extend InfobloxB1FeedName = column_ifexists(\"InfobloxB1FeedName\", \"\")\n| extend InfobloxRPZ = column_ifexists(\"InfobloxRPZ\", \"\")\n| extend InfobloxB1PolicyAction = column_ifexists(\"InfobloxB1PolicyAction\", \"\")\n| extend InfobloxB1PolicyName = column_ifexists(\"InfobloxB1PolicyName\", \"\")\n| extend InfobloxDomainCat = column_ifexists(\"InfobloxDomainCat\", \"\")\n| extend InfobloxB1ConnectionType = column_ifexists(\"InfobloxB1ConnectionType\", \"\")\n| extend InfobloxB1SrcOSVersion = column_ifexists(\"InfobloxB1SrcOSVersion\", \"\")\n| extend InfobloxB1Network = column_ifexists(\"InfobloxB1Network\", \"\")\n| extend DeviceName = column_ifexists(\"DeviceName\", \"\")\n| extend SourceMACAddress = column_ifexists(\"SourceMACAddress\", \"\")\n| extend InfobloxLeaseOp = column_ifexists(\"InfobloxLeaseOp\", \"\")\n| extend InfobloxLifetime = column_ifexists(\"InfobloxLifetime\", \"\")\n| extend InfobloxLeaseUUID = column_ifexists(\"InfobloxLeaseUUID\", \"\")\n| extend InfobloxDNSRCode = column_ifexists(\"InfobloxDNSRCode\", \"\")\n| extend InfobloxDNSQClass = column_ifexists(\"InfobloxDNSQClass\", \"\")\n| extend InfobloxDNSQType = column_ifexists(\"InfobloxDNSQType\", \"\")\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

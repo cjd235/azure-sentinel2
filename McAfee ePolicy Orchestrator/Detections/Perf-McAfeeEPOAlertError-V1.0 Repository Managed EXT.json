@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1e3bcd0f-10b2-4fbd-854f-1c6f33acc36a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1e3bcd0f-10b2-4fbd-854f-1c6f33acc36a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "McAfee ePO - Error sending alert",
+        "description": "'Detects when error sending alert occurs.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "McAfeeEPOEvent\n| where EventId == '1062'\n| extend IPCustomEntity = DvcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562",
+          "T1070"
+        ],
+        "alertRuleTemplateName": "1e3bcd0f-10b2-4fbd-854f-1c6f33acc36a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

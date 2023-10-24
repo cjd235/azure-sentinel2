@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/95d5ca9b-72c5-4b80-ad5c-b6401cdc5e08')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/95d5ca9b-72c5-4b80-ad5c-b6401cdc5e08')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Ubiquiti - RDP from external source",
+        "description": "'Detects remote to local (R2L) RDP connection.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "UbiquitiAuditEvent\n| where EventCategory =~ 'firewall'\n| where ipv4_is_private(SrcIpAddr) == 'False'\n| where ipv4_is_private(DstIpAddr)\n| where DstPortNumber == '3389'\n| extend IPCustomEntity = DstIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1133"
+        ],
+        "alertRuleTemplateName": "95d5ca9b-72c5-4b80-ad5c-b6401cdc5e08",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

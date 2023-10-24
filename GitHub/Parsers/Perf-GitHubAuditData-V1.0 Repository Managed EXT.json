@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GitHubAuditData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GitHubAuditData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GitHubAuditData",
+        "query": "GitHubAuditLogPolling_CL\n| project TimeGenerated=unixtime_milliseconds_todatetime(created_at_d),\n    Organization=columnifexists('org_s', \"\"),\n    Action=action_s,\n    Repository=columnifexists('repo_s',\"\"),\n    Actor=columnifexists('actor_s', \"\"),\n\tCountry=columnifexists('actor_location_country_code_s', \"\"),\n    ImpactedUser=columnifexists('user_s', \"\"),\n    InvitedUserPermission=columnifexists('permission_s', \"\"),\n    Visibility=columnifexists('visibility_s', \"\"),\n    PreviousVisibility=columnifexists('previous_visibility_s', \"\"),\n    CurrentPermission=columnifexists('permission_s', \"\"),\n    PreviousPermission=columnifexists('old_permission_s', \"\"),\n    TeamName=columnifexists('team_s', \"\"),\n    BlockedUser=columnifexists('blocked_user_s', \"\")\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

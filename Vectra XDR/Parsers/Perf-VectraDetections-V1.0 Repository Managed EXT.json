@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VectraDetections')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VectraDetections",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VectraDetections",
+        "query": "let VectraDetections_view  = view () { \n    Detections_Data_CL\n    | extend \n        EventVendor=\"VectraDetections\",\n        EventProduct=\"VectraDetections\",\n        ID = column_ifexists('id_d', ''),\n        [\"Detection Category\"] = column_ifexists('Category', ''),\n        [\"Is Triaged\"] = column_ifexists('triaged_b', ''),\n        [\"Detection Name\"] = column_ifexists('detection_type_s', ''),\n        [\"D Type Vname\"] = column_ifexists('d_type_vname_s', ''),\n        [\"Detection ID\"] = column_ifexists('detection_id_d', ''),\n        [\"Vectra Pivot\"] = column_ifexists('detection_href_s', ''),\n        [\"Entity ID\"] = toint(column_ifexists('entity_id_d', '')),\n        URL = column_ifexists('url_s', ''),\n        [\"Entity UID\"] = column_ifexists('entity_uid_s', ''),\n        [\"Last Updated\"] = column_ifexists('event_timestamp_t', ''),\n        [\"Details\"] = column_ifexists('detail_s', ''),\n        Severity = column_ifexists('Severity', ''),\n        [\"Source IP\"] = column_ifexists('src_ip_s', ''),\n        [\"Detection Details\"] = column_ifexists('d_detection_details_s', ''),\n        [\"Normal Domains\"] = column_ifexists('normal_domains_s', ''),\n        [\"Is Targeting Key Asset\"] = column_ifexists('is_targeting_key_asset_s', ''),\n        [\"Source Host\"] = column_ifexists('src_host_s', ''),\n        Summary = column_ifexists('summary_s', ''),\n        [\"Grouped Details\"] = column_ifexists('grouped_details_s', '')\n    | extend \n        [\"Vectra Pivot\"] = case(isnotempty(['Vectra Pivot']), strcat(['Vectra Pivot'], \"&pivot=Vectra-Sentinel-1.0.0\"), ['Vectra Pivot']),\n        URL = case(isnotempty(URL), strcat(URL, \"?pivot=Vectra-Sentinel-1.0.0\"), URL)\n    | project\n        TimeGenerated,\n        EventVendor,\n        EventProduct,\n        ID,\n        [\"Detection Category\"],\n        [\"Is Triaged\"],\n        [\"Detection Name\"],\n        [\"D Type Vname\"],\n        [\"Detection ID\"],\n        [\"Vectra Pivot\"],\n        [\"Entity ID\"],\n        URL,\n        [\"Entity UID\"],\n        [\"Last Updated\"],\n        [\"Details\"],\n        Severity,\n        [\"Source IP\"],\n        [\"Detection Details\"],\n        [\"Normal Domains\"],\n        [\"Is Targeting Key Asset\"],\n        [\"Source Host\"],\n        Summary,\n        [\"Grouped Details\"]\n};\nVectraDetections_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

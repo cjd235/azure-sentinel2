@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/617b02d8-0f47-4f3c-afed-1926a45e7b28')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/617b02d8-0f47-4f3c-afed-1926a45e7b28')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Palo Alto Prisma Cloud - High risk score alert",
+        "description": "'Detects alerts with high risk score value.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "PaloAltoPrismaCloud\n| where Reason =~ 'NEW_ALERT'\n| where Status =~ 'open'\n| extend r_score = 0.85 * toint(RiskDetailRiskScoreMaxScore)\n| extend i_RiskDetailRiskScoreScore = toint(RiskDetailRiskScoreScore)\n| where i_RiskDetailRiskScoreScore > r_score\n| extend AccountCustomEntity = UserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1133"
+        ],
+        "alertRuleTemplateName": "617b02d8-0f47-4f3c-afed-1926a45e7b28",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c7bfadd4-34a6-4fa5-82f8-3691a32261e8')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c7bfadd4-34a6-4fa5-82f8-3691a32261e8')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Changes to AWS Elastic Load Balancer security groups",
+        "description": "'Elastic Load Balancer distributes incoming traffic across multiple instances in multiple availability Zones. This increases the fault tolerance of your applications.\n Unwanted changes to Elastic Load Balancer specific security groups could open your environment to attack and  hence needs monitoring.\n More information: https://medium.com/@GorillaStack/the-most-important-aws-cloudtrail-security-events-to-track-a5b9873f8255\n and https://aws.amazon.com/elasticloadbalancing/.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let EventNameList = dynamic([\"ApplySecurityGroupsToLoadBalancer\", \"SetSecurityGroups\"]);\nAWSCloudTrail\n| where EventName in~ (EventNameList)\n| extend User = iif(isnotempty(UserIdentityUserName), UserIdentityUserName, SessionIssuerUserName)\n| summarize EventCount=count(), StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated)\nby EventSource, EventName, UserIdentityType, User, SourceIpAddress, UserAgent, SessionMfaAuthenticated, AWSRegion,\nAdditionalEventData, UserIdentityAccountId, UserIdentityPrincipalid, ResponseElements\n| extend timestamp = StartTimeUtc, AccountCustomEntity = User , IPCustomEntity = SourceIpAddress\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1098"
+        ],
+        "alertRuleTemplateName": "c7bfadd4-34a6-4fa5-82f8-3691a32261e8",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

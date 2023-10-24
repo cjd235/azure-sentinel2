@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ForescoutEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ForescoutEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ForescoutEvent",
+        "query": "Syslog \n| where ProcessName == ```ACTIONidentity```\n| extend EventVendor = 'Forescout'\n| extend EventProduct = 'Forescout'\n| extend EventName = extract(@'([^\\.:]+).*', 1, SyslogMessage)\n| extend SrcIpAddr = extract(@'.*?(Source|Host):\\s+?(\\d+.\\d+.\\d+.\\d+).*', 2, SyslogMessage)\n| extend DstIpAddr = extract(@'.*?(Destination|Target):\\s+?(\\d+.\\d+.\\d+.\\d+).*', 2, SyslogMessage)\n| extend SrcUserUpn = extract(@'.*?mail_from=([^,]+).*', 1, SyslogMessage)\n| extend DstUserUpn = extract(@'.*?mail_to=([^,]+).*', 1, SyslogMessage)\n| extend EmailSubject = extract(@'.*?mail_subject=([^,]+).*', 1, SyslogMessage)\n| extend EventResultDetails = extract(@'.*?Reason:\\s+?([^,]+).*', 1, SyslogMessage)\n| extend EventSchemaVersion = '0.1'\n| extend EventCount = 1\n| project-away SyslogMessage\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

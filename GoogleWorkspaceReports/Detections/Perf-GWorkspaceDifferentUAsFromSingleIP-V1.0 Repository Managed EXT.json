@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6ff0e16e-5999-11ec-bf63-0242ac130002')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6ff0e16e-5999-11ec-bf63-0242ac130002')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GWorkspace - Multiple user agents for single source",
+        "description": "'Detects requests with different user agents from one source in short timeframe.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 5;\nGWorkspaceActivityReports\n| where isnotempty(UserAgentOriginal)\n| summarize user_ua = makeset(UserAgentOriginal) by SrcIpAddr, bin(TimeGenerated, 5m)\n| where array_length(user_ua) > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence",
+          "Collection"
+        ],
+        "techniques": [
+          "T1185",
+          "T1176"
+        ],
+        "alertRuleTemplateName": "6ff0e16e-5999-11ec-bf63-0242ac130002",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

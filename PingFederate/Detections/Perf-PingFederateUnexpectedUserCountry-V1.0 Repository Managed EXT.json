@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/64e65105-c4fc-4c28-a4e9-bb1a3ce7652d')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/64e65105-c4fc-4c28-a4e9-bb1a3ce7652d')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Ping Federate - Unexpected country for user",
+        "description": "'Detects requests from different countries for user in shotr term.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let known_countries = \nPingFederateEvent\n| where TimeGenerated between (ago(1d) .. (1h))\n| where isnotempty(DstGeoCountry)\n| summarize makeset(DstGeoCountry);\nPingFederateEvent\n| where isnotempty(DstGeoCountry)\n| where DstGeoCountry !in (known_countries)\n| extend AccountCustomEntity = DstUserName\n| extend IpCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "64e65105-c4fc-4c28-a4e9-bb1a3ce7652d",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IpCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

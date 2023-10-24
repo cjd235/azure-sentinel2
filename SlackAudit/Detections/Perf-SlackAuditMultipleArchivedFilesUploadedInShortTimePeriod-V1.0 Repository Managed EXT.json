@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3db0cb83-5fa4-4310-a8a0-d8d66183f0bd')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3db0cb83-5fa4-4310-a8a0-d8d66183f0bd')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "SlackAudit - Multiple archived files uploaded in short period of time",
+        "description": "'This query helps to detect when a user uploads multiple archived files in short period of time.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let threshold = 10;\nSlackAudit\n| where DvcAction =~ 'file_uploaded'\n| extend FE = extract(@'.*\\.(.*)$', 1, EntityFileName)\n| where FE in~ ('tar', 'bz2', 'gz', 'tgz', 'Z', 'tbz2', 'zst', 'zip', 'zipx', '7z', 'rar', 'sfx')\n| summarize count() by SrcUserName, bucket = bin(TimeGenerated, 15m)\n| where count_ > threshold\n| extend AccountCustomEntity = SrcUserName\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1567"
+        ],
+        "alertRuleTemplateName": "3db0cb83-5fa4-4310-a8a0-d8d66183f0bd",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

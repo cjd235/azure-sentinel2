@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(FireEyeNXEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "FireEyeNXEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "FireEyeNXEvent",
+        "query": "CommonSecurityLog\n| where DeviceVendor =~ 'FireEye'\n|extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n\t\tDeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n\t\tDeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3),\n        ExternalID = coalesce(column_ifexists(\"ExtID\", \"\"),tostring(ExternalID))\n| extend packed = pack(DeviceCustomNumber1Label, DeviceCustomNumber1\n                     , DeviceCustomNumber2Label, DeviceCustomNumber2\n                     , DeviceCustomNumber3Label, DeviceCustomNumber3\n                     , DeviceCustomString1Label, DeviceCustomString1\n                     , DeviceCustomString2Label, DeviceCustomString2\n                     , DeviceCustomString3Label, DeviceCustomString3\n                     , DeviceCustomString4Label, DeviceCustomString4\n                     , DeviceCustomString5Label, DeviceCustomString5\n                     , DeviceCustomString6Label, DeviceCustomString6\n                     , DeviceCustomDate1Label, DeviceCustomDate1\n                     , DeviceCustomDate2Label, DeviceCustomDate2)\n| evaluate bag_unpack(packed)\n| project-rename EventVendor=DeviceVendor\n                , EventProduct=DeviceProduct\n                , EventProductVersion=DeviceVersion\n                , EventId=DeviceEventClassID\n                , EventSeverity=LogSeverity\n                , DstPortNumber=DestinationPort\n                , DstIpAddr=DestinationIP\n                , DvcIpAddr=DeviceAddress\n                , DvcHostname=DeviceName\n                , NetworkApplicationProtocol=Protocol\n                , SrcPortNumber=SourcePort\n                , SrcIpAddr=SourceIP\n                , DstMacAddr=DestinationMACAddress\n                , Id=ExternalID\n                , SrcDvcHostname=SourceHostName\n                , SrcMacAddr=SourceMACAddress\n| extend EventType=Activity\n| extend ThreatName = column_ifexists(\"anomaly\", \"\")\n         , OsInfo = column_ifexists(\"osinfo\", \"\")\n         , Malware = column_ifexists(\"osinfo\", \"\")\n         , Vlan = column_ifexists(\"osinfo\", \"\")\n         , IncidentUrl = column_ifexists(\"osinfo\", \"\")\n| extend EventTimeIngested=todatetime(ReceiptTime)\n| project-away Activity\n            , ReceiptTime\n            , DeviceCustomNumber1\n            , DeviceCustomNumber1Label\n            , DeviceCustomNumber2\n            , DeviceCustomNumber2Label\n            , DeviceCustomNumber3\n            , DeviceCustomNumber3Label\n            , DeviceCustomString1\n            , DeviceCustomString1Label\n            , DeviceCustomString2\n            , DeviceCustomString2Label\n            , DeviceCustomString3\n            , DeviceCustomString3Label\n            , DeviceCustomString4\n            , DeviceCustomString4Label\n            , DeviceCustomString5\n            , DeviceCustomString5Label\n            , DeviceCustomString6\n            , DeviceCustomString6Label\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

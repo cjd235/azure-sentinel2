@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(TrendMicroTippingPoint')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "TrendMicroTippingPoint",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "TrendMicroTippingPoint",
+        "query": "// REFERENCES: \n// Using functions in Azure monitor log queries: https://docs.microsoft.com/azure/azure-monitor/log-query/functions\n// TippingPoint SMS User Guide: https://docs.trendmicro.com/all/tip/sms/v5.4.0/en-us/sms_5.4.0_ug.pdf\n// \nCommonSecurityLog\n| where DeviceProduct == \"UnityOne\"\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n         DeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3)\n| extend DeviceVendor = iff(DeviceVendor == \"TippingPoint\", \"Trend Micro\", DeviceVendor)\n| extend DeviceProduct = iff(DeviceProduct == \"UnityOne\", \"TippingPoint\", DeviceProduct)\n| parse AdditionalExtensions with \"cat=\" cat\n| extend cat = coalesce(column_ifexists(\"DeviceEventCategory\",\"\"),cat)\n| project-rename TippingPointVLAN = DeviceCustomNumber1, TippingPointTaxonomy = DeviceCustomNumber2, TippingPointPacketTrace = DeviceCustomNumber3, TippingPointProfileName = DeviceCustomString1, TippingPointPolicyUUID = DeviceCustomString2, TippingPointSignatureUUID = DeviceCustomString3, TippingPointZoneNames = DeviceCustomString4, TippingPointSMSName = DeviceCustomString5, TippingPointFilterMessageParms = DeviceCustomString6\n| project-away DeviceCustomIPv6Address1Label, DeviceCustomIPv6Address2Label, DeviceCustomIPv6Address3Label, DeviceCustomNumber1Label, DeviceCustomNumber2Label, DeviceCustomNumber3Label, DeviceCustomString1Label, DeviceCustomString2Label, DeviceCustomString3Label, DeviceCustomString4Label, DeviceCustomString5Label, DeviceCustomString6Label\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

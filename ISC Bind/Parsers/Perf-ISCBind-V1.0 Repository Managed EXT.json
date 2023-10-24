@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ISCBind')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ISCBind",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ISCBind",
+        "query": "//request events\nlet request = Syslog \n| where SyslogMessage has_all (\"client\", \"query:\") and SyslogMessage !has \"response:\"\n| parse SyslogMessage with\n        * \"client \" * \" \"\n        SrcIpAddr:string \"#\" \n        SrcPortNumber:string \" \" *\n        \"query: \"\n        DnsQuery:string \" \"\n        DnsQueryClassName:string \" \"\n        DnsQueryTypeName:string \" \"\n        DnsFlags:string\n| extend ServerIPAddressIndex= indexof(DnsFlags, \" \")\n| extend ServerIPAddress = iif(ServerIPAddressIndex != \"-1\", substring(DnsFlags, ServerIPAddressIndex),\"\")\n| extend ServerIPAddress = replace_regex(ServerIPAddress,@\"[()]\",\"\")\n| extend DnsFlags =iif(ServerIPAddressIndex != \"-1\", substring(DnsFlags, 0, ServerIPAddressIndex), DnsFlags)\n| extend SrcPortNumber = replace_regex(SrcPortNumber,@\"[^\\d]\",\"\")\n| extend EventSubType = \"request\",DnsResponseCodeName = \"NA\"\n| project-away SyslogMessage,ProcessName,ProcessID,Facility,SeverityLevel,HostName,ServerIPAddressIndex;\n//request (cache) events\nlet requestcache = Syslog \n| where SyslogMessage has_all (\"client\", \"query (cache)\") and SyslogMessage !has \"response:\"\n| parse SyslogMessage with\n        * \"client \" * \" \"\n        SrcIpAddr:string \"#\" \n        SrcPortNumber:string \" \" *\n        \"query (cache) '\"\n        DnsQuery:string \"/\"\n        DnsQueryTypeName:string \"/\"\n        DnsQueryClassName:string \"' \"\n        Action\n| extend EventSubType = \"requestcache\",DnsResponseCodeName = \"NA\"\n| project-away SyslogMessage,ProcessName,ProcessID,Facility,SeverityLevel,HostName;\n// response events\nlet response =Syslog \n| where SyslogMessage has_all (\"client\", \"query:\", \"response:\")\n| parse SyslogMessage with\n        * \"client \" * \" \"\n        SrcIpAddr:string \"#\" \n        SrcPortNumber:string \" \" * \"view \" * \": \"\n        NetworkProtocol:string \": query: \"\n        DnsQuery:string \" \"\n        DnsQueryClassName:string \" \"\n        DnsQueryTypeName:string \" \"\n        \"response: \" DnsResponseCodeName: string\n        \" \" DnsFlags: string\n| extend DNSResourceRecordIndex= indexof(DnsFlags, \" \")\n| extend DnsResponseName =iif(DNSResourceRecordIndex != \"-1\", substring(DnsFlags, DNSResourceRecordIndex), \"\")\n| extend DnsFlags =iif(DNSResourceRecordIndex != \"-1\", substring(DnsFlags, 0, DNSResourceRecordIndex), DnsFlags)\n| extend EventSubType = \"response\"\n| project-away SyslogMessage,ProcessName,ProcessID,Facility,SeverityLevel,HostName,DNSResourceRecordIndex;\nunion request,requestcache,response\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/1fa1528e-f746-4794-8a41-14827f4cb798')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/1fa1528e-f746-4794-8a41-14827f4cb798')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "PulseConnectSecure - Large Number of Distinct Failed User Logins",
+        "description": "'This query identifies evidence of failed login attempts from a large number of distinct users on a Pulse Connect Secure VPN server'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 100;\nPulseConnectSecure\n| where Messages startswith \"Login failed\"\n| summarize dcount(User) by Computer, bin(TimeGenerated, 15m)\n| where dcount_User > threshold\n| extend timestamp = TimeGenerated, HostCustomEntity = Computer\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1110"
+        ],
+        "alertRuleTemplateName": "1fa1528e-f746-4794-8a41-14827f4cb798",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

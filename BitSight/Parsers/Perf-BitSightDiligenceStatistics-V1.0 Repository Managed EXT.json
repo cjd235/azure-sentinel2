@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightDiligenceStatistics')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightDiligenceStatistics",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightDiligenceStatistics",
+        "query": "let DiligenceStatistics_view  = view () {\n    Diligence_statistics_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"DiligenceStatistics\",\n                Unknown = column_ifexists('unknown_d', ''),\n                Bad = column_ifexists('bad_d', ''),\n                Warn = column_ifexists('warn_d', ''),\n                Neutral = column_ifexists('neutral_d', ''),\n                Fair = column_ifexists('fair_d', ''),\n                Good = column_ifexists('good_d', ''),\n                RiskVector = column_ifexists('risk_vector_s', ''),\n                CompanyName = column_ifexists('Company_name_s', ''),\n                SpearPhishing = column_ifexists('spear_phishing_d', ''),\n                BitFlip = column_ifexists('bit_flip_d', ''),\n                TypographicalErrors = column_ifexists('typographical_errors_d', ''),\n                TLDVariant = column_ifexists('tld_variant_d', ''),\n                TotalCount = column_ifexists('total_count_d', '')\n    | project\n                TimeGenerated,\n                EventVendor,\n                EventProduct,\n                Unknown,\n                Bad,\n                Warn,\n                Neutral,\n                Fair,\n                Good,\n                RiskVector,\n                CompanyName,\n                SpearPhishing,\n                BitFlip,\n                TypographicalErrors,\n                TLDVariant,\n                TotalCount,\n                Type\n};\nDiligenceStatistics_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

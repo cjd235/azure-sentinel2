@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fc50076a-0275-43d5-b9dd-38346c061f67')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fc50076a-0275-43d5-b9dd-38346c061f67')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cloudflare - Multiple user agents for single source",
+        "description": "'Detects requests with different user agents from one source in short timeframe.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\nCloudflare\n| where isnotempty(HttpUserAgentOriginal)\n| summarize d_ua = dcount(HttpUserAgentOriginal) by SrcIpAddr, bin(TimeGenerated, 3m)\n| where d_ua > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "fc50076a-0275-43d5-b9dd-38346c061f67",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

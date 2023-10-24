@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(SymantecProxySG')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "SymantecProxySG",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "SymantecProxySG",
+        "query": "Syslog\n| where Computer in (\"datasource\") and Facility == \"local0\"\n// Parse 1/3 of SyslogMessage. Seperated due to extract_all() operator limited to 16 regex groups\n| extend Parser = extract_all(@'^(\\d{4}\\-\\d{2}-\\d{2})\\s+(\\d{2}\\:\\d{2}:\\d{2})\\s+(\\d+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+\\\"([\\w\\s\\)\\(;\\/_-]+)\\\"\\s+(\\S+)\\s+(\\d+)\\s+([\\S\\s]+)',dynamic([1,2,3,4,5,6,7,8,9,10,11,12]), SyslogMessage)\n| mv-expand Parser\n| extend logTime = todatetime(strcat(tostring(Parser[0]),'T',tostring(Parser[1]))), \n    time_taken = tolong(Parser[2]), \n    c_ip = tostring(Parser[3]), \n    cs_userdn = tostring(Parser[4]), \n    cs_auth_groups= replace(@\"%20\",@'',tostring(Parser[5])), \n    exception_id = tostring(Parser[6]), \n    sc_filter_result = tostring(Parser[7]), \n    cs_categories = split(Parser[8],\";\"), \n    cs_referrer = tostring(Parser[9]), \n    sc_status = tostring(Parser[10]), \n    RemainingString1 = Parser[11]\n// Parse 2/3 of SyslogMessage\n| extend Parser2 = extract_all(@'^(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s+(\\\"([\\w\\s\\)\\,\\.\\(\\;\\:\\/\\_\\-\\|\\}\\{\\%\\=\\+\\?\\<\\>\\#\\]\\[]+)\\\"|(\\S+))\\s+(\\S+)\\s+(\\S+)\\s+([\\S\\s]+)',dynamic([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]), tostring(RemainingString1))\n| mv-expand Parser2\n// Parse 3/3 of SyslogMessage\n| extend s_action = tostring(Parser2[0]), \n    cs_method= tostring(Parser2[1]), \n    content_type = split(replace(@\"%20\",@'',tostring(Parser2[2])),\";\"), \n    cs_uri_scheme = tostring(Parser2[3]), \n    cs_host = tostring(Parser2[4]), \n    cs_uri_port = tostring(Parser2[5]), \n    cs_uri_path = tostring(Parser2[6]), \n    cs_uri_query = tostring(Parser2[7]), \n    cs_uri_extension = tostring(Parser2[8]), \n    cs_user_agent = tostring(Parser2[10]), s_ip = tostring(Parser2[12]), \n    sent_bytes =  tolong(Parser2[13]), RemainingString2 = Parser2[14]\n| extend Parser3 = extract_all(@'^(\\d+)\\s+(\\S+)\\s+\\\"([\\w].+)\\\"\\s+\\\"([\\w].+)\\\"\\s+(\\d+)\\s+(\\S+)\\s+(\\S+)',dynamic([1,2,3,4,5,6,7]), tostring(RemainingString2))\n| mv-expand Parser3\n| extend received_bytes = tolong(Parser3[0]), \n    virus_id = tostring(Parser3[1]), \n    app_name = tostring(Parser3[2]), \n    app_operation = tostring(Parser3[3]), \n    src_port = tostring(Parser3[4]), \n    cs_threat_risk = tostring(Parser3[6]),\n    country = replace(@\"%20\",@' ',tostring(Parser3[5]))\n| project-away Parser, Parser2, Parser3, RemainingString1, RemainingString2\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

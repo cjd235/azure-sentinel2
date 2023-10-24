@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/24f0779d-3927-403a-aac1-cc8791653606')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/24f0779d-3927-403a-aac1-cc8791653606')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Zscaler - ZPA connections from new IP",
+        "description": "'Detects ZPA connections from new IP.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let listIPs =\nZPAEvent \n| where TimeGenerated > ago(14d)\n| where DvcAction == 'open'\n| summarize ListofIPs = make_set(SrcIpAddr) by DstUserName\n| project ListofIPs;\nZPAEvent\n| where isnotempty(SrcIpAddr)\n| where SrcIpAddr !in (listIPs)\n| summarize EventCount = count() by DstUserName, SrcIpAddr\n| project-away EventCount\n| extend IPCustomEntity = SrcIpAddr, AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "24f0779d-3927-403a-aac1-cc8791653606",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bcc3362d-b6f9-4de0-b41c-707fafd5a416')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bcc3362d-b6f9-4de0-b41c-707fafd5a416')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "New Sonrai Ticket",
+        "description": "'Checks for new Sonrai tickets. \nIt uses the action type to check if a ticket has been created'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Sonrai_Tickets_CL\n| where action_d == 1\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "bcc3362d-b6f9-4de0-b41c-707fafd5a416",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "New - {{digest_ticketSrn_s}} - {{digest_ticketKeyName_s}}",
+          "alertSeverityColumnName": "digest_severityCategory_s",
+          "alertDescriptionFormat": "digest_ticketKeyDescription_s"
+        },
+        "customDetails": {
+          "ticketOrg": "digest_org_s",
+          "ticketName": "digest_title_s",
+          "ticketStatus": "digest_status_s",
+          "criticalResource": "digest_criticalResourceName_s",
+          "resourceType": "digest_resourceType_s",
+          "resourceLabel": "digest_resourceLabel_s"
+        },
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

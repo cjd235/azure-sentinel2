@@ -1,0 +1,92 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2e629769-60eb-4a14-8bfc-bde9be66ebeb')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2e629769-60eb-4a14-8bfc-bde9be66ebeb')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Darktrace System Status",
+        "description": "'This rule creates Microsoft Sentinel Alerts based on Darktrace system status alerts for health monitoring, fetched every 5 minutes.'\n",
+        "severity": "Informational",
+        "enabled": true,
+        "query": "darktrace_model_alerts_CL //anything starting with 'Dt' is not an ASIM mapping \n| where dtProduct_s ==\"System Alert\"\n| extend EventVendor=\"Darktrace\", EventProduct=\"Darktrace DETECT\"\n| project-rename ThreatCategory=dtProduct_s, EventStartTime=time_s, NetworkRuleName=friendlyName_s, SrcIpAddr=deviceIP_s, SrcHostname=hostname_s, ThreatRiskLevel=priority_code_d, ThreatRiskCategory=priority_s, DtSeverity=Severity, DtName=name_s, DtStatus=status_s, DtMessage=Message, DtURL=url_s, DtUUID=uuid_g\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": null,
+        "techniques": null,
+        "alertRuleTemplateName": "2e629769-60eb-4a14-8bfc-bde9be66ebeb",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "Darktrace: {{ThreatRiskLevel}} - {{NetworkRuleName}}",
+          "alertTacticsColumnName": null,
+          "alertSeverityColumnName": null,
+          "alertDescriptionFormat": "{{DtMessage}}",
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "AlertLink",
+              "value": "DtURL"
+            },
+            {
+              "alertProperty": "ProviderName",
+              "value": "EventVendor"
+            },
+            {
+              "alertProperty": "ProductName",
+              "value": "EventProduct"
+            },
+            {
+              "alertProperty": "ProductComponentName",
+              "value": "ThreatCategory"
+            }
+          ]
+        },
+        "customDetails": {
+          "DtSeverity": "DtSeverity",
+          "DtName": "DtName",
+          "DtMessage": "DtMessage",
+          "EventStartTime": "EventStartTime",
+          "NetworkRuleName": "NetworkRuleName",
+          "ThreatRiskLevel": "ThreatRiskLevel",
+          "DtStatus": "DtStatus",
+          "ThreatRiskCategory": "ThreatRiskCategory"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "SrcHostname"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "SrcIpAddr"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.1.0"
+      }
+    }
+  ]
+}

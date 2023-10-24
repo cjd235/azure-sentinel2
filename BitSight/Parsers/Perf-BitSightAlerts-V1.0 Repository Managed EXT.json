@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightAlerts')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightAlerts",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightAlerts",
+        "query": "let Alerts_view  = view () {\n    Alerts_data_CL\n    | extend\n                EventVendor =\"BitSight\",\n                EventProduct =\"Alert\",\n                GUID = column_ifexists('guid_d', ''),\n                AlertType = column_ifexists('alert_type_s', ''),\n                AlertDate = column_ifexists('alert_date_s', ''),\n                StartDate = column_ifexists('start_date_s', ''),\n                CompanyName = column_ifexists('company_name_s', ''),\n                CompanyGUID = column_ifexists('company_guid_g', ''),\n                CompanyURL = column_ifexists('company_url_s', ''),\n                FolderGUID = column_ifexists('folder_guid_g', ''),\n                FolderName = column_ifexists('folder_name_s', ''),\n                Severity = column_ifexists('severity_s', ''),\n                Trigger = column_ifexists('trigger_s', '')\n    | project\n                TimeGenerated,\n\t\t\t\tEventVendor,\n                EventProduct,\n                GUID,\n                AlertType,\n                AlertDate,\n                StartDate,\n                CompanyName,\n                CompanyGUID,\n                CompanyURL,\n                FolderGUID,\n                FolderName,\n                Severity,\n                Trigger,\n                Type\n};\nAlerts_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

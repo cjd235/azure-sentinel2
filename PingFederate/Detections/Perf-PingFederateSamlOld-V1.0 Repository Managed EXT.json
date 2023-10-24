@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/fddd3840-acd2-41ed-94d9-1474b0a7c8a6')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/fddd3840-acd2-41ed-94d9-1474b0a7c8a6')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Ping Federate - SAML old version",
+        "description": "'Detects requests using not the latest version of SAML protocol.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "PingFederateEvent\n| where isnotempty(DeviceCustomString3)\n| extend proto = extract(@'(SAML)', 1, DeviceCustomString3)\n| extend ver = extract(@'(\\d+)', 1, DeviceCustomString3)\n| where proto =~ 'SAML'\n| where ver !~ '20'\n| extend AccountCustomEntity = DstUserName\n| extend IpCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190"
+        ],
+        "alertRuleTemplateName": "fddd3840-acd2-41ed-94d9-1474b0a7c8a6",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IpCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

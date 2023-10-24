@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/0f4a80de-344f-47c0-bc19-cb120c59b6f0')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/0f4a80de-344f-47c0-bc19-cb120c59b6f0')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "VMware ESXi - New VM started",
+        "description": "'Detects when new VM was started.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let a_vm = \nVMwareESXi\n| where SyslogMessage has ('VmPoweredOnEvent')\n| extend DstHostname = extract(@'\\[\\d+\\]\\s+\\[(.*?)\\s+on', 1, SyslogMessage)\n| summarize vm_l = makeset(DstHostname)\n| extend k=1;\nVMwareESXi\n| where SyslogMessage has ('VmPoweredOnEvent')\n| extend DstHostname = extract(@'\\[\\d+\\]\\s+\\[(.*?)\\s+on', 1, SyslogMessage)\n| extend k = 1\n| join (a_vm) on k\n| where vm_l !has DstHostname\n| extend HostCustomEntity = DstHostname\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "0f4a80de-344f-47c0-bc19-cb120c59b6f0",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

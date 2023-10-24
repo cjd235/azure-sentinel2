@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Infoblox_dns_consolidated')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Infoblox_dns_consolidated",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Infoblox_dns_consolidated",
+        "query": "union\nInfoblox_dnsclient,Infoblox_dnsgss,Infoblox_dnszone\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

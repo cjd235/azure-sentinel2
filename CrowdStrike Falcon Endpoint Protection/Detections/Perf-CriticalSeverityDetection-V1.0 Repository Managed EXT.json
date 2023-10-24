@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f7d298b2-726c-42a5-bbac-0d7f9950f527')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f7d298b2-726c-42a5-bbac-0d7f9950f527')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Critical Severity Detection",
+        "description": "'Creates an incident when a CrowdStrike Falcon sensor detection is triggered with a Critical Severity'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let timeframe = 1h;\nCrowdStrikeFalconEventStream\n| where TimeGenerated > ago(timeframe)\n| where EventType == \"DetectionSummaryEvent\"\n| where Severity == \"Critical\"\n| summarize StartTimeUtc = min(TimeGenerated), EndTimeUtc = max(TimeGenerated), Total = count() by DstHostName, SrcIpAddr, DstUserName, Activity, Technique, FileName, FilePath, FileHash, Message\n| extend timestamp = StartTimeUtc, AccountCustomEntity = DstUserName, HostCustomEntity = DstHostName, IPCustomEntity = SrcIpAddr, FileHashCustomEntity = FileHash, FileHashAlgo = \"MD5\"\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": null,
+        "techniques": null,
+        "alertRuleTemplateName": "f7d298b2-726c-42a5-bbac-0d7f9950f527",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Algorithm",
+                "columnName": "FileHashAlgo"
+              },
+              {
+                "identifier": "Value",
+                "columnName": "FileHashCustomEntity"
+              }
+            ],
+            "entityType": "FileHash"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

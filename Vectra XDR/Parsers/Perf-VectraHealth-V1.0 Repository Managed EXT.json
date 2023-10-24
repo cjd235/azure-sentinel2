@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VectraHealth')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VectraHealth",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VectraHealth",
+        "query": "let VectraHealth_view  = view () { \n    Health_Data_CL\n    | extend\n        EventVendor=\"VectraHealth\",\n        EventProduct=\"VectraHealth\",\n        ['Last Updated'] = column_ifexists('system_version_last_update_s', ''),\n        ['CPU Usage - User (%)'] = column_ifexists('cpu_user_percent_d', ''),\n        ['CPU Usage - System (%)'] = column_ifexists('cpu_system_percent_d', ''),\n        ['CPU Usage - Idle (%)'] = column_ifexists('cpu_idle_percent_d', ''),\n        ['Disk Utilization (%)'] = column_ifexists('disk_disk_utilization_usage_percent_d', ''),\n        ['Memory Utilization (%)'] = column_ifexists('memory_usage_percent_d', ''),\n        ['Power Status'] = column_ifexists('power_status_s', ''),\n        ['Power Error'] = column_ifexists('power_error_s', ''),\n        Network = column_ifexists('network_s', ''),\n        Sensors = column_ifexists('sensors_s', ''),\n        Connectivity_Sensors = column_ifexists('connectivity_sensors_s', ''),\n        System_Version_Last_Update = column_ifexists('system_version_last_update_s', ''),\n        Trafficdrop_Sensors = column_ifexists('trafficdrop_sensors_s', '')\n    | project\n        TimeGenerated,\n        EventVendor,\n        EventProduct,\n        System_Version_Last_Update,\n        ['Last Updated'],\n        ['CPU Usage - User (%)'],\n        ['CPU Usage - System (%)'],\n        ['CPU Usage - Idle (%)'],\n        ['Disk Utilization (%)'],\n        ['Memory Utilization (%)'],\n        ['Power Status'],\n        ['Power Error'],\n        Network,\n        Sensors,\n        Connectivity_Sensors,\n        Trafficdrop_Sensors\n};\nVectraHealth_view()\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

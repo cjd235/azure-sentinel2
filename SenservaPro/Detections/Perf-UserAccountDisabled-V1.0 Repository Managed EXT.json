@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/24E0132F-61D1-41BD-9393-06136D1039C7')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/24E0132F-61D1-41BD-9393-06136D1039C7')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "UserAccountDisabled",
+        "description": "'This query searches for account is Disabled. Does not effect score as its easily enabled.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "SenservaPro_CL\n| where ControlName_s == 'UserDisabled'\n",
+        "queryFrequency": "PT6H",
+        "queryPeriod": "PT6H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "24E0132F-61D1-41BD-9393-06136D1039C7",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "ControlName_s"
+              },
+              {
+                "identifier": "AadTenantId",
+                "columnName": "TenantId"
+              },
+              {
+                "identifier": "DisplayName",
+                "columnName": "TenantDisplayName_s"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DistinguishedName",
+                "columnName": "Group_s"
+              }
+            ],
+            "entityType": "SecurityGroup"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "ResourceId",
+                "columnName": "SourceSystem"
+              }
+            ],
+            "entityType": "AzureResource"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

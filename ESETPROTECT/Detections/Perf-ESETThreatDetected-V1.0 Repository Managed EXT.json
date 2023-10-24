@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/64badfab-1dd8-4491-927b-3ca206fa9a17')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/64badfab-1dd8-4491-927b-3ca206fa9a17')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Threats detected by ESET",
+        "description": "'Escalates threats detected by ESET.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "ESETPROTECT\n| where EventType == \"Threat_Event\"\n| extend DvcHostname, SrcUserName, DvcIpAddr, FileHashSha1, FileHashAlgo = \"SHA1\"\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "techniques": [
+          "T1204"
+        ],
+        "alertRuleTemplateName": "64badfab-1dd8-4491-927b-3ca206fa9a17",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "SrcUserName"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DvcHostname"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "DvcIpAddr"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Algorithm",
+                "columnName": "FileHashAlgo"
+              },
+              {
+                "identifier": "Value",
+                "columnName": "FileHashSha1"
+              }
+            ],
+            "entityType": "FileHash"
+          }
+        ],
+        "templateVersion": "1.0.2"
+      }
+    }
+  ]
+}

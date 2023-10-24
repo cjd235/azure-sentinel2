@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/3b803560-f8a6-4db4-89cb-617d89724ba1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/3b803560-f8a6-4db4-89cb-617d89724ba1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Box - Item shared to external entity",
+        "description": "'Detects when an item was shared to external entity.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "BoxEvents\n| where EventType =~ 'COLLABORATION_INVITE'\n| extend corp_domain = tolower(extract(@'@(.*)', 1, SrcUserUpn))\n| extend accessibleby_domain = tolower(extract(@'@(.*)', 1, AccessibleByLogin))\n| where corp_domain != accessibleby_domain\n| extend AccountCustomEntity = SrcUserUpn\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Exfiltration"
+        ],
+        "techniques": [
+          "T1537"
+        ],
+        "alertRuleTemplateName": "3b803560-f8a6-4db4-89cb-617d89724ba1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

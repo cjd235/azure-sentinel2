@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/42771afe-edb3-4330-bc4a-abf6a5714454')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/42771afe-edb3-4330-bc4a-abf6a5714454')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "NGINX - Multiple client errors from single IP address",
+        "description": "'Detects multiple client errors from one source in short timeframe'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 100;\nNGINXHTTPServer\n| where tolong(HttpStatusCode) >= 400 and tolong(HttpStatusCode) <= 499 \n| summarize MultipleClientErrors = count() by SrcIpAddr, bin(TimeGenerated, 5m)\n| where MultipleClientErrors > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "42771afe-edb3-4330-bc4a-abf6a5714454",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

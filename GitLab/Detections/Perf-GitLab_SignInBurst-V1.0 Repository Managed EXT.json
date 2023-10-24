@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/57b1634b-531d-4eab-a456-8b855887428f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/57b1634b-531d-4eab-a456-8b855887428f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GitLab - SSO - Sign-Ins Burst",
+        "description": "'This query relies on Azure Active Directory sign-in activity when Azure AD is used for SSO with GitLab to highlights GitLab accounts associated with multiple authentications from different geographical locations in a short space of time.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let locationCountMin = 1;\nlet appRegistrationName = \"GitLab\";\nSigninLogs\n| where AppDisplayName == appRegistrationName\n| where ResultType == 0\n| where Location != \"\"\n| summarize CountOfLocations = dcount(Location), Locations = make_set(Location) by User = Identity\n| where CountOfLocations > locationCountMin\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1110"
+        ],
+        "alertRuleTemplateName": "57b1634b-531d-4eab-a456-8b855887428f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "User"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

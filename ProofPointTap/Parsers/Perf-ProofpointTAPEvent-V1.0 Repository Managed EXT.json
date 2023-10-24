@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ProofpointTAPEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ProofpointTAPEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ProofpointTAPEvent",
+        "query": "union isfuzzy=true ProofpointTAPNativePoller_CL, ProofPointTAPMessagesDelivered_CL, ProofPointTAPMessagesBlocked_CL, ProofPointTAPClicksPermitted_CL, ProofPointTAPClicksBlocked_CL\n| extend EventVendor = 'Proofpoint',\n         EventProduct = 'Targeted Attack Protection',\n         EventCount = '1'\n| project-rename CcAddresses=ccAddresses_s,\n\t             Cluster=cluster_s,\n\t             CompletelyRewritten=completelyRewritten_b,\n\t             SrcUsername=fromAddress_s,\n\t             EventOriginalUid=GUID_s,\n\t             HeaderFrom=headerFrom_s,\n\t             HeaderReplyTo=headerReplyTo_s,\n\t             Id=id_g,\n\t             ImpostorScore=impostorScore_d,\n\t             MalwareScore=malwareScore_d,\n\t             MessageId=messageID_s,\n\t             MessageParts=messageParts_s,\n\t             NetworkBytes=messageSize_d,\n\t             EventEndTime=messageTime_t,\n\t             ModulesRun=modulesRun_s,\n\t             PhishScore=phishScore_d,\n\t             PolicyRoutes=policyRoutes_s,\n\t             Qid=QID_s,\n\t             QuarantineFolder=quarantineFolder_s,\n\t             QuarantineRule=quarantineRule_s,\n\t             Recipient=recipient_s,\n\t             ReplyToAddress=replyToAddress_s,\n\t             Sender=sender_s,\n\t             SrcIpAddr=senderIP_s,\n\t             SpamScore=spamScore_d,\n\t             Subject=subject_s,\n\t             ThreatsInfoMap=threatsInfoMap_s,\n\t             DstUsername=toAddresses_s,\n\t             Xmailer=xmailer_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

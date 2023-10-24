@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ZScalerFW_Parser')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ZScalerFW_Parser",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ZScalerFW_Parser",
+        "query": "CommonSecurityLog\n| where DeviceVendor == \"Zscaler\" and DeviceProduct == \"NSSFWlog\"\n| extend deviceTranslatedPort = extract(@\"deviceTranslatedPort=(.*?)(;|$)\", 1, AdditionalExtensions),\n    tunnelType = extract(@\"tunnelType=(.*?)(;|$)\", 1, AdditionalExtensions),\n    dnat = extract(@\"dnat=(.*?)(;|$)\", 1, AdditionalExtensions),\n    stateful = extract(@\"stateful=(.*?)(;|$)\", 1, AdditionalExtensions),\n    reason = coalesce(\n                            extract(@\"reason=(.*?)(;|$)\", 1, AdditionalExtensions),                            \n                            column_ifexists(\"Reason\", \"\")\n                        ),\n    DeviceCustomString6Label = extract(@\"cs6label=(.*?)(;|$)\", 1, AdditionalExtensions),\n    destCountry = extract(@\"destCountry=(.*?)(;|$)\", 1, AdditionalExtensions),\n    avgduration = extract(@\"avgduration=(.*?)(;|$)\", 1, AdditionalExtensions)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

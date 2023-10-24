@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(VMwareESXi')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "VMwareESXi",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "VMwareESXi",
+        "query": "Syslog\n| where Computer has_any ('ESXiserver1', 'ESXiserver2') // ESXiserver1 and ESXiserver2 are examples, replace this list with your ESXi devices\n| extend Parser = extract_all(@\"^(\\w+)?\\s?(\\w+)\\[(\\w+)\\]\\s([\\s\\S]+)\", dynamic([1,2,3,4]), SyslogMessage)[0]\n| extend Substring =  iif(isnotempty(Parser), tostring(Parser[3]),\"\")\n| extend Sub = iif(Substring has (\"sub=\"), extract(@\"sub=([\\w\\d\\(\\)\\-\\.]+)\\]?\",1, Substring), dynamic(\"\")),\n\t OpId = iif(Substring has (\"opID=\"), extract(@\"opID=([\\w\\d\\(\\)\\-@]+)\\s?\\]?\",1, Substring), dynamic(\"\")),\n         UserName = iif(Substring has(\"suser=\"), extract(@\"\\suser=([\\w\\d\\(\\)\\-]+)\\]\",1, Substring), dynamic (\"\"))\n| extend Message = iif(isnotempty(Substring), extract(@\"\\[([\\S\\s]+)\\]\\s([\\S\\s]+)\",2, Substring), \"\")\n| extend Message = iif(isempty(Message),SyslogMessage,Message)\n| extend Message = trim(@\"^-- \", Message)\n| project-away Substring, Parser\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

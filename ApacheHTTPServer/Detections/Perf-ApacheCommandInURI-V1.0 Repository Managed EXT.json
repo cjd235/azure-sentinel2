@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/54da6a42-3b00-11ec-8d3d-0242ac130003')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/54da6a42-3b00-11ec-8d3d-0242ac130003')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Apache - Command in URI",
+        "description": "'Detects command in URI'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let cmd_list = dynamic(['whoami', 'dpkg', 'useradd', 'sudo', 'cat']);\nApacheHTTPServer\n| where UrlOriginal has_any (cmd_list)\n| extend UrlCustomEntity = UrlOriginal\n",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "54da6a42-3b00-11ec-8d3d-0242ac130003",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2b328487-162d-4034-b472-59f1d53684a1')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2b328487-162d-4034-b472-59f1d53684a1')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco Umbrella - Empty User Agent Detected",
+        "description": "'Rule helps to detect empty and unusual user agent indicating web browsing activity by an unusual process other than a web browser.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let timeframe = 15m;\nCisco_Umbrella\n| where EventType == \"proxylogs\"\n| where TimeGenerated > ago(timeframe)\n| where HttpUserAgentOriginal == ''\n| extend Message = \"Empty User Agent\"\n| project Message, SrcIpAddr, DstIpAddr, UrlOriginal, TimeGenerated\n| extend IPCustomEntity = SrcIpAddr, UrlCustomEntity = UrlOriginal\n",
+        "queryFrequency": "PT15M",
+        "queryPeriod": "PT15M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "alertRuleTemplateName": "2b328487-162d-4034-b472-59f1d53684a1",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.1.1"
+      }
+    }
+  ]
+}

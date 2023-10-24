@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d9f28fdf-abc8-4f1a-a7e7-1aaec87a2fc5')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d9f28fdf-abc8-4f1a-a7e7-1aaec87a2fc5')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Sdelete deployed via GPO and run recursively",
+        "description": "'This query looks for the Sdelete process being run recursively after being deployed to a host via GPO. Attackers could use this technique to deploy Sdelete to multiple host and delete data on them.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "SecurityEvent\n  | where EventID == 4688\n  | where Process =~ \"svchost.exe\"\n  | where CommandLine has \"-k GPSvcGroup\" or CommandLine has \"-s gpsvc\"\n  | extend timekey = bin(TimeGenerated, 1m)\n  | project timekey, NewProcessId, Computer\n  | join kind=inner (SecurityEvent\n  | where EventID == 4688\n  | where Process =~ \"sdelete.exe\" or CommandLine has \"sdelete\"\n  | where ParentProcessName endswith \"svchost.exe\"\n  | where CommandLine has_all (\"-s\", \"-r\")\n  | extend newProcess = Process\n  | extend timekey = bin(TimeGenerated, 1m)\n  ) on $left.NewProcessId == $right.ProcessId, timekey, Computer\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1485"
+        ],
+        "alertRuleTemplateName": "d9f28fdf-abc8-4f1a-a7e7-1aaec87a2fc5",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "Account"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "Computer"
+              }
+            ],
+            "entityType": "Host"
+          }
+        ],
+        "tags": [
+          null
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

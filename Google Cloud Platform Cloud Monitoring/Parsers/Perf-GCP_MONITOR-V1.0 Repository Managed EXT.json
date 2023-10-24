@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GCP_MONITOR')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GCP_MONITOR",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GCP_MONITOR",
+        "query": "GCP_MONITORING_CL\n| extend EventVendor = 'GCP'\n| extend EventProduct = 'Cloud Monitoring'\n| project-rename MetricLabelsInstanceName=metric_labels_instance_name_s,\n    MetricType=metric_type_s,\n    ResourceType=resource_type_s,\n    ResourceLabelsProjectId=resource_labels_project_id_s,\n    ResourceLabelsInstanceId=resource_labels_instance_id_s,\n    ResourceLabelsZone=resource_labels_zone_s,\n    MetricKind=metricKind_s,\n    ValueType=valueType_s,\n    IntervalStartTime=interval_startTime_t,\n    IntervalEndTime=interval_endTime_t,\n    ValueInt64Value=value_int64Value_d\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

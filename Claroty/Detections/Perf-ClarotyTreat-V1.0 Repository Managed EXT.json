@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/731e5ac4-7fe1-4b06-9941-532f2e008bb3')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/731e5ac4-7fe1-4b06-9941-532f2e008bb3')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Claroty - Treat detected",
+        "description": "'Detects Collection of known malware commands and control servers.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "ClarotyEvent\n| where EventOriginalType has 'Treat' or EventType has 'Treat'\n| project TimeGenerated, DstIpAddr\n| extend IPCustomEntity = DstIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1018"
+        ],
+        "alertRuleTemplateName": "731e5ac4-7fe1-4b06-9941-532f2e008bb3",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

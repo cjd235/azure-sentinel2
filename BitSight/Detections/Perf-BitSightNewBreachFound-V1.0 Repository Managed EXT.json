@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a5526ba9-5997-47c6-bf2e-60a08b681e9b')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a5526ba9-5997-47c6-bf2e-60a08b681e9b')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "BitSight - new breach found",
+        "description": "'Rule helps to detect a new breach generated in BitSight.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let timeframe = 24h;\nBitSightBreaches\n| where ingestion_time() > ago(timeframe)\n| extend Severity = toreal(Severity)\n| extend Severity = case( Severity == 1, \"Low\",\n                          Severity == 2, \"Medium\",\n                          Severity == 3, \"High\",\n                          \"Informational\")\n| project DateCreated, Companyname, Severity, PreviwURL, GUID\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "PT24H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "alertRuleTemplateName": "a5526ba9-5997-47c6-bf2e-60a08b681e9b",
+        "incidentConfiguration": {
+          "createIncident": false
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "BitSight: Alert for new breach in {{Companyname}}.",
+          "alertSeverityColumnName": "Severity",
+          "alertDescriptionFormat": "Alert is generated on {{DateCreated}} at BitSight.\\n\\nGUID: {{GUID}}\\nPreview URL: {{PreviwURL}}"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "PreviwURL"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c1544d8f-cbbd-4e35-8d32-5b9312279833')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c1544d8f-cbbd-4e35-8d32-5b9312279833')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GitLab - External User Added to GitLab",
+        "description": "'This queries GitLab Application logs to list external user accounts (i.e.: account not in allow-listed domains) which have been added to GitLab users.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "// List of allow-listed domains\nlet allowedDomain = pack_array(\"mydomain.com\");\nGitLabAudit\n| where AddAction == \"user\"\n| project AuthorName, IPAddress, User = EntityName\n| join (GitLabApp \n| where UserAdded == 1\n| parse kind=regex Message with \"User \\\"\" User \"\\\"\" EmailAddress \" was created\"\n| project tostring(User), EmailAddress = substring(EmailAddress,2,strlen(EmailAddress)-3)) on User\n| project  AuthorName, IPAddress, User, EmailAddress, DomainName = tostring(extract(\"@(.*)$\", 1, EmailAddress))\n| where allowedDomain !contains DomainName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1136"
+        ],
+        "alertRuleTemplateName": "c1544d8f-cbbd-4e35-8d32-5b9312279833",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPAddress"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "User"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AuthorName"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DomainName"
+              }
+            ],
+            "entityType": "DNS"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(ZNSegmentAudit')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "ZNSegmentAudit",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "ZNSegmentAudit",
+        "query": "let AuditTypesTable = datatable(auditType_d: double, AuditType: string) [\n    0, \"Unspecified\",\n    1, \"Asset is being added to protection\",\n    2, \"Asset added to protection\",\n    3, \"Asset failed adding to protection\",\n    4, \"Asset is being removed from protection\",\n    5, \"Removed asset from protection\",\n    6, \"Failed removing asset from protection\",\n    7, \"Asset added to learning\",\n    8, \"Asset removed from learning\",\n    9, \"Access rule created\",\n    10, \"Access rule deleted\",\n    11, \"Access rule expired\",\n    12, \"Access rule edited\",\n    17, \"MFA access policy created\",\n    18, \"MFA access policy deleted\",\n    19, \"MFA access policy edited\",\n    20, \"JIT rule created\",\n    21, \"JIT rule deleted\",\n    22, \"JIT rule expired\",\n    23, \"JIT rule revived\",\n    24, \"JIT rule edited\",\n    25, \"API Token created\",\n    26, \"API Token deleted\",\n    27, \"API Token regenerated\",\n    28, \"Asset learning is extended\",\n    29, \"Outbound block rule created\",\n    30, \"Outbound block rule deleted\",\n    31, \"Outbound block rule expired\",\n    32, \"Outbound block rule edited\",\n    33, \"Inbound block rule created\",\n    34, \"Inbound block rule deleted\",\n    35, \"Inbound block rule expired\",\n    36, \"Inbound block rule edited\",\n    37, \"Inbound rule pseudo edited\",\n    38, \"Outbound rule pseudo edited\"\n];\nlet EnforcementSourceTypeTable = datatable (enforcementSource_d: double, EnforcementSource: string) [\n    1, \"Reactive Policy\",\n    2, \"Automated\",\n    3, \"Access Portal\",\n    4, \"Admin Portal\",\n    5, \"AI\",\n    6, \"API\"\n];\nlet UserRoleTypeTable = datatable (userRole_d: double, UserRole: string) [\n    1, \"Admin\",\n    2, \"Viewer\",\n    3, \"Regular\",\n    4, \"API - Full Access\",\n    5, \"API - Read Only\",\n    6, \"Self Service\"\n];\nunion isfuzzy=true ZNSegmentAuditNativePoller_CL, ZNSegmentAudit_CL\n| project-away TimeGenerated\n| lookup kind=leftouter AuditTypesTable on auditType_d\n| lookup kind=leftouter EnforcementSourceTypeTable on enforcementSource_d\n| lookup kind=leftouter UserRoleTypeTable on userRole_d\n| extend entity=parse_json(destinationEntitiesList_s)\n| extend EventVendor=\"Zero Networks\",\n    EventProduct=\"Segment Audit\",\n    AuditTypeId=column_ifexists('auditType_d', ''),\n    TimeGenerated=unixtime_milliseconds_todatetime(timestamp_d),\n    EnforcementSourceId=column_ifexists('enforcementSource_d', ''),\n    UserRoleId=column_ifexists('userRole_d', ''),\n    DestinationEntityName = ['entity'][0].name,\n    DestinationEntityId = ['entity'][0].id,\n    Details=column_ifexists('details_s', ''),\n    PerformedById=column_ifexists('performedBy_id_s', ''),\n    PerformedByName=column_ifexists('performedBy_name_s', ''),\n    PerformedByGuid=column_ifexists('performedBy_id_g', ''),\n    ReportedObjectGuid=column_ifexists('reportedObjectId_g', ''),\n    ReportedObjectId=column_ifexists('reportedObjectId_s', '')\n| extend Rule=parse_json(Details).rule,\n    ReactivePolicy=parse_json(Details).rp\n| project\n    TimeGenerated,\n    EventVendor,\n    EventProduct,\n    AuditTypeId,\n    AuditType,\n    DestinationEntityId,\n    DestinationEntityName,\n    EnforcementSourceId,\n    EnforcementSource,\n    PerformedByGuid,\n    PerformedById,\n    PerformedByName,\n    ReportedObjectGuid,\n    ReportedObjectId,\n    UserRoleId,\n    UserRole,\n    Rule,\n    ReactivePolicy\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

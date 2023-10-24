@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2238d13a-cf05-4973-a83f-d12a25dbb153')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2238d13a-cf05-4973-a83f-d12a25dbb153')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GitLab - Brute-force Attempts",
+        "description": "'This query relies on GitLab Application Logs to get failed logins to highlight brute-force attempts from different IP addresses in a short space of time.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let LearningPeriod = 7d; \nlet EndLearningTime = now();\nlet BinTime = 1h; \nlet RunTime = 1h; \nlet MinThreshold = 3.0; \nlet GitLabFailedLogins = (GitLabApp\n| where FailedLogin == 1\n| parse kind=regex Message with \"Failed Login: username=\" User \"ip=\" IpAddress \n| project TimeGenerated, EventTime, Computer, User, HostName, HostIP, IpAddress);\nGitLabFailedLogins \n| where EventTime between (ago(LearningPeriod) .. EndLearningTime) \n| summarize FailedLoginsCountInBinTime = count() by User, bin(EventTime, BinTime) \n| summarize AvgOfFailedLoginsInLearning = avg(FailedLoginsCountInBinTime), StdOfFailedLoginsInLearning = stdev(FailedLoginsCountInBinTime) by User \n| extend LearningThreshold = max_of(AvgOfFailedLoginsInLearning, MinThreshold) \n| join kind=innerunique ( GitLabFailedLogins \n| summarize FailedLoginsCountInRunTime = count() by User, IpAddress, EventTime = bin(EventTime, BinTime) ) on User \n| where FailedLoginsCountInRunTime >= LearningThreshold\n| project User, IpAddress, EventTime, FailedLoginsCountInRunTime, LearningThreshold\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1110"
+        ],
+        "alertRuleTemplateName": "2238d13a-cf05-4973-a83f-d12a25dbb153",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPAddress"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "User"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

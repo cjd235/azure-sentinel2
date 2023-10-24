@@ -1,0 +1,79 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/C27BB559-28C5-4924-A7DA-3BF04CD02C8F')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/C27BB559-28C5-4924-A7DA-3BF04CD02C8F')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Azure secure score block legacy authentication",
+        "description": "'This query searches for most compromising sign-in attempts come from legacy authentication. \n Older office clients such as Office 2010 do not support modern authentication \n and use legacy protocols such as IMAP, SMTP, and POP3. \n Legacy authentication does not support multi-factor authentication (MFA).\n Even if an MFA policy is configured in your environment, bad actors can \n bypass these enforcements through legacy protocols.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "SenservaPro_CL\n| where ControlName_s == 'AzureSecureScoreBlockLegacyAuthentication'\n",
+        "queryFrequency": "PT6H",
+        "queryPeriod": "PT6H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1212",
+          "T1556"
+        ],
+        "alertRuleTemplateName": "C27BB559-28C5-4924-A7DA-3BF04CD02C8F",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "ControlName_s"
+              },
+              {
+                "identifier": "AadTenantId",
+                "columnName": "TenantId"
+              },
+              {
+                "identifier": "DisplayName",
+                "columnName": "TenantDisplayName_s"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DistinguishedName",
+                "columnName": "Group_s"
+              }
+            ],
+            "entityType": "SecurityGroup"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "ResourceId",
+                "columnName": "SourceSystem"
+              }
+            ],
+            "entityType": "AzureResource"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

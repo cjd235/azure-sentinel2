@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(MongoDBAudit')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "MongoDBAudit",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "MongoDBAudit",
+        "query": "MongoDBAudit_CL\n| extend EventVendor = 'MongoDB',\n         EventProduct = 'MongDB Audit',\n         EventCount = 1\n| extend d=parse_json(RawData)\n| extend EventEndTime = todatetime(d['ts']['$date'])\n| extend DvcAction = d['atype']\n| extend SrcIpAddr = d['remote']['ip']\n| extend SrcPortNumber = d['remote']['port']\n| extend DstIpAddr = d['local']['ip']\n| extend DstPortNumber = d['local']['port']\n| extend Users = d['users']\n| extend Roles = d['roles']\n| extend Parameters = d['param']\n| extend EventResultCode = d['result']\n| extend EventResult = case(EventResultCode == 13, \"Unauthorized to perform the operation.\",\n                              EventResultCode == 18, \"Authentication Failed\",\n                              EventResultCode == 26, \"NamespaceNotFound\",\n                              EventResultCode == 276, \"Index build aborted.\",\n                              EventResultCode == 334, \"Mechanism Unavailable\",\n                              \"Success\")\n| project-away d, RawData\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

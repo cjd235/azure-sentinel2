@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DefendAuditData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DefendAuditData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DefendAuditData",
+        "query": "EgressDefend_CL\n| project \n    TimeGenerated=time_t,\n    Event=event_s,\n    Recipients=email_rcptTo_s,\n    From=email_mailFrom_s,\n    Subject=columnifexists('email_subject_s', \"\"),\n    Attachments=email_attachments_s,\n    MessageId=email_messageId_s,\n    ThreatLevel=email_threat_s,\n    TrustLevel=email_trust_s,\n    FirstTimeSender=email_firstTimeSender_b,\n    PayLoad=columnifexists('email_payload_Type_s', \"\"),\n    LinksClicked=email_linksClicked_d,\n    SenderIP=email_senderIp_s,\n    Url=linkClicked_s,\n    PhishType=email_phishType_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

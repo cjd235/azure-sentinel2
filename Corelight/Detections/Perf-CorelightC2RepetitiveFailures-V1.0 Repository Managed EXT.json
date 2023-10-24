@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8eaa2268-74ee-492c-b869-450eff707fef')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8eaa2268-74ee-492c-b869-450eff707fef')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Corelight - C2 DGA Detected Via Repetitive Failures",
+        "description": "'Detects large amounts of DNS resolution failures.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 25;\nCorelight\n| where EventType =~ 'dns'\n| where DnsResponseCodeName in~ ('NXDOMAIN', 'SERVFAIL')\n| summarize count() by DnsQueryName, SrcIpAddr, bin(TimeGenerated, 5m)\n| where count_ > threshold\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "alertRuleTemplateName": "8eaa2268-74ee-492c-b869-450eff707fef",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

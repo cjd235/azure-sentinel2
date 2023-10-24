@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(DynatraceProblems')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "DynatraceProblems",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "DynatraceProblems",
+        "query": "DynatraceProblems_CL\n| extend EventVendor = 'Dynatrace'\n| extend EventProduct = 'Application Monitoring'\n| extend Severity = case(severityLevel_s  == 'ERROR', 'High', \n                       severityLevel_s == 'INFO', 'Informational', \n                       'Medium')\n| project-rename\n    ProblemId = problemId_s,\n    AffectedEntities = affectedEntities_s ,\n    ImpactedEntities = impactedEntities_s ,\n    ManagementZones = managementZones_s ,\n    DisplayId = displayId_s,\n    EndTime = endTime_d ,\n    EntityTags = entityTags_s ,\n    ImpactLevel = impactLevel_s ,\n    StartTime = startTime_d ,\n    Status = status_s ,\n    Title = title_s, \n    SeverityLevel = severityLevel_s\n| project-away problemFilters_s,evidenceDetails_totalCount_d,\n    evidenceDetails_details_s, impactAnalysis_impacts_s\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

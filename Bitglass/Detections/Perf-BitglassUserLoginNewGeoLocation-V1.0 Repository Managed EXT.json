@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/34401e66-9fe9-476b-a443-3a3f89e4f3b0')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/34401e66-9fe9-476b-a443-3a3f89e4f3b0')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Bitglass - User login from new geo location",
+        "description": "'Detects user login from new geo location.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Bitglass\n| where EventType =~ 'access'\n| where EventMessage =~ 'Login'\n| summarize g_loc = makeset(SrcGeoLocation) by User\n| join (Bitglass\n        | where EventType =~ 'access'\n        | where EventMessage =~ 'Login') on User\n| where g_loc !contains SrcGeoLocation\n| extend AccountCustomEntity = User, FileCustomEntity = SrcFileName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "34401e66-9fe9-476b-a443-3a3f89e4f3b0",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "FileCustomEntity"
+              }
+            ],
+            "entityType": "File"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

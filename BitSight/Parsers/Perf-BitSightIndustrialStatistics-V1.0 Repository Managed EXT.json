@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightIndustrialStatistics')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightIndustrialStatistics",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightIndustrialStatistics",
+        "query": "let IndustrialStatistics_view  = view () {\n    Industrial_statistics_CL\n    | extend\n            EventVendor =\"BitSight\",\n            EventProduct =\"IndustrialStatistics\",\n            Count = column_ifexists('count_d', ''),\n            CountPeriod = column_ifexists('count_period_s', ''),\n            AverageDurationDays = column_ifexists('average_duration_days_d', ''),\n            RiskVector = column_ifexists('risk_vector_s', ''),\n            CompanyName = column_ifexists('Company_name_s', '')\n    | project\n            TimeGenerated,\n            EventVendor,\n            EventProduct,\n            Count,\n            CountPeriod,\n            AverageDurationDays,\n            RiskVector,\n            CompanyName,\n            Type\n};\nIndustrialStatistics_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/17bf3780-ae0d-4cd9-a884-5df8b687f3f5')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/17bf3780-ae0d-4cd9-a884-5df8b687f3f5')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Votiro - File Blocked from Connector",
+        "description": "'The analytic rule is intended to detect when a file is blocked by Votiro Sanitization Engine due to a specific policy, and notify the appropriate parties so that they can take appropriate action. The alert message will state that a file with a specific name and hash value was blocked by Votiro Sanatization Engine due to a specific policy name, and that more details can be found at a specific incident URL.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let Votiro_view  = view () { VotiroEvents | where sanitizationResult has \"Blocked\" and passwordProtected == \"false\" and from =~ \"null\" | extend FileWithConnectorDetails = strcat_delim(' ', fileName, 'with the hash', SrcFileSHA256, 'that was sent from connector', connectorName) | summarize count() by fileName, SrcFileSHA256, FileWithConnectorDetails, policyName, tostring(incidentURL), sanitizationResult, LogSeverity | extend FileHashAlgo = \"SHA256\", FileHashValue = SrcFileSHA256};Votiro_view",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion",
+          "Discovery",
+          "Impact"
+        ],
+        "techniques": [
+          "T1036",
+          "T1083",
+          "T1057",
+          "T1082",
+          "T1565",
+          "T1498",
+          "T0837"
+        ],
+        "alertRuleTemplateName": "17bf3780-ae0d-4cd9-a884-5df8b687f3f5",
+        "incidentConfiguration": {
+          "createIncident": true
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "File with hash {{SrcFileSHA256}} was blocked",
+          "alertTacticsColumnName": "sanitizationResult",
+          "alertSeverityColumnName": "LogSeverity",
+          "alertDescriptionFormat": "The {{FileWithConnectorDetails}} was blocked by Votiro due to Policy rules, see more detail in the following link {{incidentURL}}"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Algorithm",
+                "columnName": "FileHashAlgo"
+              },
+              {
+                "identifier": "Value",
+                "columnName": "FileHashValue"
+              }
+            ],
+            "entityType": "FileHash"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/74b80987-0a62-448c-8779-47b02e17d3cf')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/74b80987-0a62-448c-8779-47b02e17d3cf')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Theom High Risks",
+        "description": "\"Creates Microsoft Sentinel incidents for high risk Theom alerts.\"\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TheomAlerts_CL\n | where priority_s == \"P2\"\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "74b80987-0a62-448c-8779-47b02e17d3cf",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "\nSummary: {{summary_s}}  \nAdditional info: {{details_s}}\nPlease investigate further on Theom UI at {{deepLink_s}}\n",
+          "alertDisplayNameFormat": "Theom Alert ID: {{id_s}} "
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

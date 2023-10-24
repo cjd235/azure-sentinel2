@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(StealthwatchEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "StealthwatchEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "StealthwatchEvent",
+        "query": "Syslog\n| where SyslogMessage has 'Stealthwatch'\n| extend EventVendor = 'Cisco'\n| extend EventProduct = 'Stealthwatch'\n| parse-kv SyslogMessage as (start:string, end:string, alarmID:string, alarmSev:string, alarmStatus:string, cat:string, domain:string, dst:string, dstPort:string, msg:string, proto:string, sourceHG:string, sourceHostSnapshot:string, src:string, flowCollectorIP:string, flowCollectorName:string, sourceUser:string, targetUser:string, argetHG:string, targetHostname:string, targetHostSnapshot:string) with (pair_delimiter='|', kv_delimiter='=')\n| parse SyslogMessage with * \"argetHG=\" argetHG\"|\" *\n| parse SyslogMessage with * \"targetHG=\" targetHG\"|\" *\n| extend DstGeoCountry = iff(SyslogMessage contains \"argetHG\",argetHG, targetHG)\n| extend EventStartTime=todatetime(start)\n| extend EventEndTime=todatetime(end)\n| project-rename EventOriginalUid=alarmID\n                , EventSeverity=alarmSev\n                , EventStatus=alarmStatus\n                , EventType=cat\n                , SrcDvcDomain=domain\n                , DstIpAddr=dst\n                , DstPortNumber=dstPort\n                , EventMessage=msg\n                , Protocol=proto\n                , SrcGeoCountry=sourceHG\n                , SrcHostSnapshot=sourceHostSnapshot\n                , SrcIpAddr=src\n                , DvcIpAddr=flowCollectorIP\n                , DvcHostname=flowCollectorName\n                , SrcUserName=sourceUser\n                , DstUserName=targetUser\n                , DstDvcHostname=targetHostname\n                , DstHostSnapshot=targetHostSnapshot\n| project-away start\n             , end\n             , SyslogMessage\n\t\t\t , argetHG\n\t\t\t , targetHG\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

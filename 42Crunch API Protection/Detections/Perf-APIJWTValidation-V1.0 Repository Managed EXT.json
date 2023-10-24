@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bbd163f4-1f56-434f-9c23-b06713c119c2')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bbd163f4-1f56-434f-9c23-b06713c119c2')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "API - JWT validation",
+        "description": "'42Crunch API protection against JWT validation'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "apifirewall_log_1_CL \n| where TimeGenerated >= ago(5m) \n| where Error_Message_s has \"missing [\\\"x-access-token\\\"]\" \n| project-away Non_blocking_mode_b, Source_Port_d, Destination_Port_d, Query_s, API_ID_g, Response_Header_s, Request_Header_s, Errors_s, Type, UUID_g \n| sort by TimeGenerated desc \n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CredentialAccess"
+        ],
+        "techniques": null,
+        "alertRuleTemplateName": "bbd163f4-1f56-434f-9c23-b06713c119c2",
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "Source_IP_s"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "HostName",
+                "columnName": "Hostname_s"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "Instance_Name_s"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/2ef36aaa-ec4a-473a-9734-f364ce8868f8')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/2ef36aaa-ec4a-473a-9734-f364ce8868f8')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Theom - Critical data in API headers or body",
+        "description": "\"Creates Sentinel incidents for critical/high Theom risks, associated with ruleId's TRIS0007 to TRIS0010 and TRIS0014\"\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TheomAlerts_CL\n  | where ( customProps_RuleId_s == \"TRIS0007\" or customProps_RuleId_s == \"TRIS0008\" or\n    customProps_RuleId_s == \"TRIS0009\" or customProps_RuleId_s == \"TRIS0010\" or customProps_RuleId_s == \"TRIS0014\" )  \n    and (priority_s == \"P1\" or priority_s == \"P2\")\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "2ef36aaa-ec4a-473a-9734-f364ce8868f8",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "\nSummary: {{summary_s}}  \nAdditional info: {{details_s}}\nPlease investigate further on Theom UI at {{deepLink_s}}\n",
+          "alertDisplayNameFormat": "Theom Alert ID: {{id_s}} "
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

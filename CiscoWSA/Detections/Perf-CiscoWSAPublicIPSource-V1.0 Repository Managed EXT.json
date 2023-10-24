@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/4250b050-e1c6-4926-af04-9484bbd7e94f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/4250b050-e1c6-4926-af04-9484bbd7e94f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco WSA - Internet access from public IP",
+        "description": "'Detects internet access from public IP.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let ip_except = dynamic(['127.0.0.2']);    //Add exceptions to this list\nCiscoWSAEvent\n| where ipv4_is_private(SrcIpAddr) == false\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1189"
+        ],
+        "alertRuleTemplateName": "4250b050-e1c6-4926-af04-9484bbd7e94f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

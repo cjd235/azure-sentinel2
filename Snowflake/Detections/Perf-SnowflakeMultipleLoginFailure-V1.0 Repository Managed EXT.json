@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/e05cc333-d499-430f-907c-7f28a9e4d1b5')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/e05cc333-d499-430f-907c-7f28a9e4d1b5')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Snowflake - Multiple login failures by user",
+        "description": "'Detects multiple login failures by user.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let threshold = 10;\nSnowflake\n| where EventType =~ 'LOGIN'\n| where IS_SUCCESS_s =~ 'No'\n| summarize count() by TargetUsername, bin(TimeGenerated, 5m)\n| where count_ > threshold\n| extend AccountCustomEntity = TargetUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "e05cc333-d499-430f-907c-7f28a9e4d1b5",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

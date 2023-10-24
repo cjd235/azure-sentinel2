@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/829a69ba-93e1-491f-8a1f-b19506e9d88a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/829a69ba-93e1-491f-8a1f-b19506e9d88a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Detecting UAC bypass - ChangePK and SLUI registry tampering",
+        "description": "This query identifies setting a registry key under HKCU, launching slui.exe and then ChangePK.exe.\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "DeviceProcessEvents\n| where InitiatingProcessParentFileName =~ \"slui.exe\"\n| where InitiatingProcessFileName =~ \"changepk.exe\"\n| where ProcessIntegrityLevel == \"High\"\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1490"
+        ],
+        "alertRuleTemplateName": "829a69ba-93e1-491f-8a1f-b19506e9d88a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DeviceName"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Sid",
+                "columnName": "AccountSid"
+              },
+              {
+                "identifier": "Name",
+                "columnName": "AccountName"
+              },
+              {
+                "identifier": "NTDomain",
+                "columnName": "AccountDomain"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "ProcessCommandLine"
+              }
+            ],
+            "entityType": "Process"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

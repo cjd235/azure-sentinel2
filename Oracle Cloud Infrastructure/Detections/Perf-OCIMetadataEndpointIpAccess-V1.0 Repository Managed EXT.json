@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a55b4bbe-a014-4ae9-a50d-441ba5e98b65')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a55b4bbe-a014-4ae9-a50d-441ba5e98b65')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "OCI - Instance metadata access",
+        "description": "'Detects instance metadata access.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "OCILogs\n| where EventType contains 'vcn.flowlogs'\n| where data_action_s =~ 'ACCEPT'\n| where DstIpAddr == '169.254.169.254'\n| extend IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1069"
+        ],
+        "alertRuleTemplateName": "a55b4bbe-a014-4ae9-a50d-441ba5e98b65",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(BitSightGraphData')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "BitSightGraphData",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "BitSightGraphData",
+        "query": "let GraphData_view  = view () {\n    Graph_data_CL\n    | extend\n            EventVendor =\"BitSight\",\n            EventProduct =\"GraphData\",\n            RatingDate = column_ifexists('Rating_Date_s', ''),\n            Rating = column_ifexists('Rating_d', ''),\n            CompanyName = column_ifexists('Company_name_s', ''),\n            RatingDifferance = column_ifexists('Rating_differance_d', '')\n    | project\n            TimeGenerated,\n            EventVendor,\n            EventProduct,\n            RatingDate,\n            Rating,\n            CompanyName,\n            RatingDifferance,\n            Type\n};\nGraphData_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9281b7cc-8f05-45a9-bf10-17fb29492a84')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9281b7cc-8f05-45a9-bf10-17fb29492a84')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "CyberArkEPM - Renamed Windows binary",
+        "description": "'Detects renamed windows binaries.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "CyberArkEPM\n| where EventSubType != 'AttackAttempt'\n| where ActingProcessName has @'\\'\n| where ActingProcessName !has ActingProcessFileInternalName\n| project EventEndTime, EventMessage, ActorUsername, ActingProcessFileInternalName\n| extend AccountCustomEntity = ActorUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution",
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1204",
+          "T1036"
+        ],
+        "alertRuleTemplateName": "9281b7cc-8f05-45a9-bf10-17fb29492a84",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

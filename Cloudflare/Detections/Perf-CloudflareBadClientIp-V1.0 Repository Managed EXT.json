@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a7ce6135-9d55-4f14-b058-adc2e920a4fa')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a7ce6135-9d55-4f14-b058-adc2e920a4fa')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cloudflare - Bad client IP",
+        "description": "'Detects requests from IP with bad reputation index.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let ip_reputation = dynamic(['unknown', 'badHost', 'greylist', 'securityScanner', 'scan', 'tor']);\nCloudflare\n| where ClientIPClass in~ (ip_reputation)\n| extend IPCustomEntity = SrcIpAddr\n| extend UrlCustomEntity = ClientRequestURI\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "a7ce6135-9d55-4f14-b058-adc2e920a4fa",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

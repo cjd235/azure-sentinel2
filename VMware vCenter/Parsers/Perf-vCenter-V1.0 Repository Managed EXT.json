@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(vCenter')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "vCenter",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "vCenter",
+        "query": "let vCenter_Login =() {\nvcenter_CL\n| where Message has (\"UserLoginSessionEvent\")\n| parse Message  with * \"Event [\" EventId:string \"] [1-1] [\" EventTime:datetime \"] [\" EventType:string \"] [\" EventSeverity \"]\" * \"[User \" DomainName:string \"\\\\\" Username:string \"@\" SourceIP \" logged in as \" UserAgent:string \"]\"\n};\nlet vCenter_Logout =() {vcenter_CL\n| where Message has (\"UserLogoutSessionEvent\")\n| parse Message with * \"Event [\" EventId:string \"] [1-1] [\" EventTime:datetime \"] [\" EventType:string \"] [\" EventSeverity \"]\" * \"[User\" DomainName:string \"\\\\\" Username:string \"@\" SourceIP \" logged out (login time:\" LoginTime:string \", number of API invocations: \" APIInvocationCount:int \", user agent:\" UserAgent:string \")]\"\n};\nlet vCenter_Role=() {vcenter_CL\n| where Message has_any(\"RoleAddedEvent\",\"RoleRemovedEvent\")\n| parse Message with * \" \" * \" \" Hostname:string \"vpxd\" * \"Event [\" EventId:string \"] [1-1] [\" EventTime:datetime \"] [\" EventType:string \"] [\" EventSeverity:string \"]\" * \"[New role \" RoleName:string \" \" Operation:string  \"]\"\n};\nlet vCenter_RoleModified=() {vcenter_CL\n| where Message has (\"RoleUpdatedEvent\")\n| parse Message with * \" \" * \" \" Hostname:string \"vpxd\" * \"Event [\" EventId:string \"] [1-1] [\" EventTime:datetime \"] [\" EventType:string \"] [\" EventSeverity:string \"]\" * \"Previous name: \" OldRoleName:string \", new name \"NewRoleName:string \" Added privileges: \" AddedPriviledges:string \" Removed privileges: \" RemovedPriviledges:string \"]\"\n};\nunion vCenter_Login,vCenter_Logout,vCenter_Role,vCenter_RoleModified\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

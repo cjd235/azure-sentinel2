@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/75024e1c-26e7-4e73-821d-95e5decdd8db')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/75024e1c-26e7-4e73-821d-95e5decdd8db')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "OracleDBAudit - Unusual user activity on multiple tables",
+        "description": "'Detects when user queries many tables in short period of time.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let tbl_threshold = 10;\nOracleDatabaseAuditEvent\n| where isnotempty(DstUserName)\n| where DbAction =~ 'SELECT'\n| extend TableName = replace(@'[,\\(\\)]', '', extract(@'(?i)SELECT(.*?)FROM\\s(.*?)\\s', 2, Action))\n| where isnotempty(TableName)\n| where TableName !~ 'SELECT'\n| summarize tbl_count = dcount(TableName) by DstUserName, bucket = bin(TimeGenerated, 5m)\n| where tbl_count > tbl_threshold\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1119"
+        ],
+        "alertRuleTemplateName": "75024e1c-26e7-4e73-821d-95e5decdd8db",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

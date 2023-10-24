@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(TenableIOAssets')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "TenableIOAssets",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "TenableIOAssets",
+        "query": "Tenable_IO_Assets_CL\n| extend \n    EventVendor=\"TenableIO\",\n    EventProduct=\"Assets\",\n    EventType='AssetExport',\n    AgentName=column_ifexists('agent_names_s', ''),\n    AgentUUID=column_ifexists('agent_uuid_g', ''),\n    AWSAvailabilityZone=column_ifexists('aws_availability_zone_s', ''),\n    AWSEC2InstanceAMI=column_ifexists('aws_ec2_instance_ami_id_s', ''),\n    AWSEC2InstanceGroupName=column_ifexists('aws_ec2_instance_group_name_s', ''),\n    AWSEC2InstanceID=column_ifexists('aws_ec2_instance_id_s', ''),\n    AWSEC2InstanceStateName=column_ifexists('aws_ec2_instance_state_name_s', ''),\n    AWSEC2InstanceType=column_ifexists('aws_ec2_instance_type_s', ''),\n    AWSOwnerID=column_ifexists('aws_owner_id_s', ''),\n    AWSRegion=column_ifexists('aws_region_s', ''),\n    AWSSubnetID=column_ifexists('aws_subnet_id_s', ''),\n    AWSVPCID=column_ifexists('aws_vpc_id_s', ''),\n    AzureResourceID=column_ifexists('azure_resource_id_s', ''),\n    AzureVMID=column_ifexists('azure_vm_id_g', ''),\n    BIOSUUID=strcat(bios_uuid_g, bios_uuid_s),\n    Computer=column_ifexists('Computer', ''),\n    CreatedAtTime=column_ifexists('created_at_t', ''),\n    DeletedAtTime=column_ifexists('deleted_at_t', ''),\n    DeletedBy=column_ifexists('deleted_by_g', ''),\n    FirstScanTime=column_ifexists('first_scan_time_t', ''),\n    FirstSeen=column_ifexists('first_seen_t', ''),\n    FQDNs=column_ifexists('fqdns_s', ''),\n    GCPInstanceID=column_ifexists('gcp_instance_id_s', ''),\n    GCPProjectID=column_ifexists('gcp_project_id_s', ''),\n    GCPZone=column_ifexists('gcp_zone_s', ''),\n    HasAgent=column_ifexists('has_agent_b', ''),\n    HasPluginResults=column_ifexists('has_plugin_results_b', ''),\n    ID=column_ifexists('id_g', ''),\n    InstalledSoftware=column_ifexists('installed_software_s', ''),\n    IPV4s=column_ifexists('ipv4s_s', ''),\n    IPV6s=column_ifexists('ipv6s_s', ''),\n    LastAuthenticatedScanDate=column_ifexists('last_authenticated_scan_date_t', ''),\n    LastLicensedScanDate=column_ifexists('last_licensed_scan_date_t', ''),\n    LastScanID=strcat(last_scan_id_g, last_scan_id_s),\n    LastScanDate=column_ifexists('last_scan_time_t', ''),\n    LastScheduleID=column_ifexists('last_schedule_id_s', ''),\n    LastSeenDate=column_ifexists('last_seen_t', ''),\n    MACAddresses=column_ifexists('mac_addresses_s', ''),\n    ManufacturerTPMIDs=column_ifexists('manufacturer_tpm_ids_s', ''),\n    NetBIOSNames=column_ifexists('netbios_names_s', ''),\n    NetworkID=column_ifexists('network_id_g', ''),\n    NetworkInterfaces=column_ifexists('network_interfaces_s', ''),\n    NetworkName=column_ifexists('network_name_s', ''),\n    OperatingSystems=column_ifexists('operating_systems_s', ''),\n    QualysAssetIDs=column_ifexists('qualys_asset_ids_s', ''),\n    QualysHostIDs=column_ifexists('qualys_host_ids_s', ''),\n    ServiceNowSysID=column_ifexists('servicenow_sysid_g', ''),\n    Sources=column_ifexists('sources_s', ''),\n    SSHFingerprints=column_ifexists('ssh_fingerprints_s', ''),\n    SymantecEPHardwareKeys=column_ifexists('symantec_ep_hardware_keys_s', ''),\n    SystemTypes=column_ifexists('system_types_s', ''),\n    Tags=column_ifexists('tags_s', ''),\n    TerminatedAt=column_ifexists('terminated_at_t', ''),\n    TerminatedBy=column_ifexists('terminated_by_s', ''),\n    UpdatedAt=column_ifexists('updated_at_t', '')\n| project\n    FQDNs,\n    AzureResourceID,\n    AzureVMID,\n    OperatingSystems,\n    IPV4s,\n    NetworkName,\n    InstalledSoftware,\n    FirstSeen,\n    LastSeenDate,\n    FirstScanTime,\n    LastScanDate,\n    LastAuthenticatedScanDate,\n    LastLicensedScanDate,\n    HasPluginResults,\n    HasAgent,\n    TimeGenerated, \n    EventVendor,\n    EventProduct,\n    EventType,\n    AgentName,\n    AgentUUID,\n    AWSAvailabilityZone,\n    AWSEC2InstanceAMI,\n    AWSEC2InstanceGroupName,\n    AWSEC2InstanceID,\n    AWSEC2InstanceStateName,\n    AWSEC2InstanceType,\n    AWSOwnerID,\n    AWSRegion,\n    AWSSubnetID,\n    AWSVPCID,\n    BIOSUUID,\n    Computer,\n    CreatedAtTime,\n    DeletedAtTime,\n    DeletedBy,\n    GCPInstanceID,\n    GCPProjectID,\n    GCPZone,\n    ID,\n    IPV6s,\n    LastScanID,\n    LastScheduleID,\n    MACAddresses,\n    ManufacturerTPMIDs,\n    NetBIOSNames,\n    NetworkID,\n    NetworkInterfaces,\n    QualysAssetIDs,\n    QualysHostIDs,\n    ServiceNowSysID,\n    Sources,\n    SSHFingerprints,\n    SymantecEPHardwareKeys,\n    SystemTypes,\n    Tags,\n    TerminatedAt,\n    TerminatedBy,\n    UpdatedAt\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

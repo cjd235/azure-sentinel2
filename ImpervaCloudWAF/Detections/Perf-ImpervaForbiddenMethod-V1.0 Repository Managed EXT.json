@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7ebc9e24-319c-4786-9151-c898240463bc')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7ebc9e24-319c-4786-9151-c898240463bc')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Imperva - Forbidden HTTP request method in request",
+        "description": "'Detects connections with unexpected HTTP request method.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let bl_http_methods = dynamic(['PUT', 'HEAD', 'OPTIONS', 'TRACE', 'POST']);\nImpervaWAFCloud\n| where HttpRequestMethod in~ (bl_http_methods)\n| extend IPCustomEntity = SrcIpAddr, UrlCustomEntity = UrlOriginal\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190",
+          "T1133"
+        ],
+        "alertRuleTemplateName": "7ebc9e24-319c-4786-9151-c898240463bc",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "UrlCustomEntity"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

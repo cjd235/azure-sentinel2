@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f6928301-56da-4d2c-aabe-e1a552bc8892')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f6928301-56da-4d2c-aabe-e1a552bc8892')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "ECR image scan findings high or critical",
+        "description": "'AWS ECR Image scan detected critical or high-severity vulnerabilities in your container image.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "AWSCloudTrail\n| where EventName == \"DescribeImageScanFindings\" and isempty(ErrorCode) and isempty(ErrorMessage)\n| extend repoName = tostring(parse_json(ResponseElements).repositoryName)\n| extend imageId = tostring(parse_json(ResponseElements).imageId.imageDigest)\n| extend Critical = toint(parse_json(ResponseElements).imageScanFindings.findingSeverityCounts.CRITICAL)\n| extend High = toint(parse_json(ResponseElements).imageScanFindings.findingSeverityCounts.HIGH)\n| where Critical > 0 or High > 0\n| extend UserIdentityUserName = iff(isnotempty(UserIdentityUserName), UserIdentityUserName, tostring(split(UserIdentityArn,'/')[-1]))\n| extend timestamp = TimeGenerated, IPCustomEntity = SourceIpAddress, AccountCustomEntity = UserIdentityUserName \n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "techniques": [
+          "T1204"
+        ],
+        "alertRuleTemplateName": "f6928301-56da-4d2c-aabe-e1a552bc8892",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/80e4db30-5636-4fbd-8816-24c3ded8d243')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/80e4db30-5636-4fbd-8816-24c3ded8d243')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "GCP IAM - New Authentication Token for Service Account",
+        "description": "'Detects when new authentication token is created for service account.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "GCP_IAM\n| where PayloadMethodname =~ 'google.iam.admin.v1.GenerateAccessToken'\n| extend result = parse_json(todynamic(PayloadAuthorizationinfo))[0]['granted']\n| where result =~ 'true'\n| extend service_account = extract(@'serviceAccounts\\/(.*?)@', 1, PayloadResponseName)\n| project-away result\n| extend timestamp = TimeGenerated, AccountCustomEntity = service_account, IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement"
+        ],
+        "techniques": [
+          "T1550"
+        ],
+        "alertRuleTemplateName": "80e4db30-5636-4fbd-8816-24c3ded8d243",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

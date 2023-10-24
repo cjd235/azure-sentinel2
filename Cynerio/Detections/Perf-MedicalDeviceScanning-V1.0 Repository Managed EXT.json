@@ -1,0 +1,56 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/211e9f49-3fca-4598-bc6e-e2c28d86e72c')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/211e9f49-3fca-4598-bc6e-e2c28d86e72c')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cynerio - Medical device scanning",
+        "description": "Medical device is scanned with vulnerability scanner",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "CynerioEvent_CL\n| where TimeGenerated > ago(24h)\n| where module_s == 'IDS'\n| where title_s == 'Scanner Activity'\n",
+        "queryFrequency": "PT5H",
+        "queryPeriod": "PT5H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement"
+        ],
+        "techniques": [
+          "T0866"
+        ],
+        "alertRuleTemplateName": "211e9f49-3fca-4598-bc6e-e2c28d86e72c",
+        "eventGroupingSettings": {
+          "aggregationKind": "SingleAlert"
+        },
+        "customDetails": {
+          "DeviceType": "asset_type_s"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "asset_ip_s"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

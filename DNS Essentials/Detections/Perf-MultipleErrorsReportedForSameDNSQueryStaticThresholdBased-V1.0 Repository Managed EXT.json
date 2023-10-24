@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/5b8344eb-fa28-4ac3-bcff-bc19d5d63089')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/5b8344eb-fa28-4ac3-bcff-bc19d5d63089')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Detect DNS queries reporting multiple errors from different clients - Static threshold based (ASIM DNS Solution)",
+        "description": "'This rule creates an alert when multiple clients report errors for the same DNS query. This helps in identifying possible similar C2 communications originating from different clients. It utilizes [ASIM](https://aka.ms/AboutASIM) normalization and is applied to any source that supports the ASIM DNS schema.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let lookback=1h;\nlet threshold = 2;\nlet errors = dynamic(['NXDOMAIN', 'SERVFAIL', 'REFUSED']);\n_Im_Dns(starttime=ago(lookback))\n  | where EventResultDetails has_any (errors)\n  | summarize SrcIPs = make_set(SrcIpAddr, 100) by DnsQuery, bin(TimeGenerated, 10min)\n  | where array_length(SrcIPs) >= threshold\n  | extend TotalIPs = array_length(SrcIPs),IPCountthreshold = threshold\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1568",
+          "T1573",
+          "T1008"
+        ],
+        "alertRuleTemplateName": "5b8344eb-fa28-4ac3-bcff-bc19d5d63089",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "Multiple errors were detected on different clients for the same DNS query. These unsuccessful responses can be an indication of C2 communication. \n\nThreshold for total clients reporting errors: '{{IPCountthreshold}}'\n\nCurrent count of clients reporting errors for this DNS query: '{{TotalIPs}}'\n\nClients requesting this DNSQuery include:\n\n'{{SrcIPs}}'",
+          "alertDisplayNameFormat": "[Static threshold] Multiple errors for the same DNS query has been detected - '{{DnsQuery}}'"
+        },
+        "customDetails": {
+          "IPCountthreshold": "IPCountthreshold",
+          "TotalIPs": "TotalIPs",
+          "SrcIPs": "SrcIPs"
+        },
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DnsQuery"
+              }
+            ],
+            "entityType": "DNS"
+          }
+        ],
+        "templateVersion": "1.0.2",
+        "status": "Available",
+        "tags": [
+          {
+            "Schema": "ASimDns",
+            "SchemaVersion": "0.1.6"
+          }
+        ]
+      }
+    }
+  ]
+}

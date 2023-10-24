@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/bd602b90-f7f9-4ae9-bf8c-3672a24deb39')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/bd602b90-f7f9-4ae9-bf8c-3672a24deb39')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Palo Alto Prisma Cloud - Anomalous access key usage",
+        "description": "'Detects anomalous API key usage activity.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\nPaloAltoPrismaCloud\n| where ResourceType =~ 'Login'\n| where EventResult =~ 'Failed'\n| where EventMessage has 'access key'\n| summarize count() by UserName, bin(TimeGenerated, 5m)\n| where count_ > threshold\n| extend AccountCustomEntity = UserName\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1078"
+        ],
+        "alertRuleTemplateName": "bd602b90-f7f9-4ae9-bf8c-3672a24deb39",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

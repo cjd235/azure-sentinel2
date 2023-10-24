@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(InsightVMAssets')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "InsightVMAssets",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "InsightVMAssets",
+        "query": "let Insight_VM_assets_view  = view () { \n    NexposeInsightVMCloud_assets_CL\n| extend packed = pack(\n                    \"AssessedForPolicies\", assessed_for_policies_b,\n                    \"AssessedForVulnerabilities\", assessed_for_vulnerabilities_b,\n                    \"CredentialAssessments\", credential_assessments_s,\n                    \"CriticalVulnerabilities\", critical_vulnerabilities_d,\n                    \"Exploits\", exploits_d,\n                    \"DvcHostname\", host_name_s,\n                    \"AssetId\", id_s,\n                    \"DvcIpAddr\", ip_s,\n                    \"LastAssessedForVulnerabilities\", last_assessed_for_vulnerabilities_t,\n                    \"LastScanEnd\", last_scan_end_t,\n                    \"LastScanStart\", last_scan_start_t,\n                    \"MalwareKits\", malware_kits_d,\n                    \"ModerateVulnerabilities\", moderate_vulnerabilities_d,\n                    \"DvcOsArch\", os_architecture_s,\n                    \"DvcOsDesc\", os_description_s,\n                    \"DvcOsFamily\", os_family_s,\n                    \"DvcOs\", os_name_s,\n                    \"DvcOsSysName\", os_system_name_s,\n                    \"DvcOsType\", os_type_s,\n                    \"DvcOsVendor\", os_vendor_s,\n                    \"DvcModelNumber\", os_version_s,\n                    \"RiskScore\", risk_score_d,\n                    \"SevereVulnerabilitiesCount\", severe_vulnerabilities_d,\n                    \"TotalVulnerabilitiesCount\", total_vulnerabilities_d,\n                    \"Uid\", unique_identifiers_s,\n                    \"VulnerabilitiesSolutions\", same_s,\n                    \"DvcMacAddr\", mac_s\n                 )\n| project TimeGenerated, packed\n| evaluate bag_unpack(packed)\n| extend       \n         EventVendor=\"Rapid7\",\n         EventProduct=\"Insight VM\",\n         EventType=\"Assets\"\n};\nInsight_VM_assets_view\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

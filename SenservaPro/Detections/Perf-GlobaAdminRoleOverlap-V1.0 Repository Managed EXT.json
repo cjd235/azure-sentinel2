@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/8E6D9A66-F1B0-463D-BA90-11A5AEC0E15A')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/8E6D9A66-F1B0-463D-BA90-11A5AEC0E15A')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Azure secure score role overlap",
+        "description": "'This query searches for accounts that have been assigned Global Administrator do not need other roles assigned. \n  Global Administrators have access to all aspects of Azure'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "SenservaPro_CL\n| where ControlName_s == 'AzureSecureScoreRoleOverlap'\n",
+        "queryFrequency": "PT6H",
+        "queryPeriod": "PT6H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Impact"
+        ],
+        "techniques": [
+          "T1529"
+        ],
+        "alertRuleTemplateName": "8E6D9A66-F1B0-463D-BA90-11A5AEC0E15A",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "ControlName_s"
+              },
+              {
+                "identifier": "AadTenantId",
+                "columnName": "TenantId"
+              },
+              {
+                "identifier": "DisplayName",
+                "columnName": "TenantDisplayName_s"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DistinguishedName",
+                "columnName": "Group_s"
+              }
+            ],
+            "entityType": "SecurityGroup"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "ResourceId",
+                "columnName": "SourceSystem"
+              }
+            ],
+            "entityType": "AzureResource"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

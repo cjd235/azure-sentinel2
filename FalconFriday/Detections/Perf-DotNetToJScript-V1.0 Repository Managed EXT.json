@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9f921513-65f3-48a2-ae7d-326c5901c55e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9f921513-65f3-48a2-ae7d-326c5901c55e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Detect .NET runtime being loaded in JScript for code execution",
+        "description": "This query detects .NET being loaded from wscript or cscript to run .NET code, such as cactustorch and sharpshooter.\nAll based on the DotNetToJScript by James Foreshaw documented here https://github.com/tyranid/DotNetToJScript. \n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "DeviceImageLoadEvents \n| where FileName in~ (\"mscoree.dll\", \"mscorlib.dll\", \"mscorlib.ni.dll\") \n| where tolower(InitiatingProcessFileName) in (\"wscript.exe\", \"cscript.exe\", \"mshta.exe\")\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "techniques": [
+          "T1204"
+        ],
+        "alertRuleTemplateName": "9f921513-65f3-48a2-ae7d-326c5901c55e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Sid",
+                "columnName": "InitiatingProcessAccountSid"
+              },
+              {
+                "identifier": "Name",
+                "columnName": "InitiatingProcessAccountName"
+              },
+              {
+                "identifier": "NTDomain",
+                "columnName": "InitiatingProcessAccountDomain"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DeviceName"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "InitiatingProcessCommandLine"
+              }
+            ],
+            "entityType": "Process"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

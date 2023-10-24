@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(GCPCloudDNS')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "GCPCloudDNS",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "GCPCloudDNS",
+        "query": "let DNSQuery_GcpDns=()\n{\n    GCP_DNS_CL\n    | project-rename\n        Query=payload_queryName_s, \n        QueryTypeName=payload_queryType_s,\n        ResponseName=payload_rdata_s, \n        EventResultDetails=payload_responseCode_s,\n        NetworkProtocol=payload_protocol_s, \n        SrcIpAddr=payload_sourceIP_s,\n        EventOriginalUid=insert_id_s,\n        EventSeverity=severity_s   \n    | extend\n        EventCount=int(1),\n        EventProduct='Cloud DNS',\n        EventVendor='GCP',\n        EventSchemaVersion=\"0.1.0\",\n        Dvc=\"GCPDNS\",\n        EventType = iif (resource_type_s == \"dns_query\", \"lookup\", resource_type_s),\n        EventResult=iff(EventResultDetails =~ 'NOERROR', 'Success', 'Failure'),\n        EventSubType='response',\n        EventEndTime=todatetime(timestamp_t)       \n    // -- Aliases\n    | extend \n        ResponseCodeName=EventResultDetails, \n        Domain=Query,\n        IpAddr=SrcIpAddr,\n        EventStartTime = EventEndTime\n};\nDNSQuery_GcpDns\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

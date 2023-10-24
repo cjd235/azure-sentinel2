@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(TMApexOneEvent')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "TMApexOneEvent",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "TMApexOneEvent",
+        "query": "CommonSecurityLog\n| where DeviceVendor == \"Trend Micro\"\n| where DeviceProduct == \"Apex Central\"\n| extend DeviceCustomNumber1 = coalesce(column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),DeviceCustomNumber1),\n         DeviceCustomNumber2 = coalesce(column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),DeviceCustomNumber2),\n         DeviceCustomNumber3 = coalesce(column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),DeviceCustomNumber3),\n         ExternalID = coalesce(column_ifexists(\"ExtID\", \"\"),tostring(ExternalID))\n| extend packed = pack (DeviceCustomNumber1Label, DeviceCustomNumber1,\n    DeviceCustomNumber2Label, DeviceCustomNumber2,\n    DeviceCustomString1Label, DeviceCustomString1,\n    DeviceCustomString2Label, DeviceCustomString2,\n    DeviceCustomString3Label, DeviceCustomString3,\n    DeviceCustomString4Label, DeviceCustomString4,\n    DeviceCustomString5Label, DeviceCustomString5,\n    DeviceCustomString6Label, DeviceCustomString6,\n    DeviceCustomDate1Label, DeviceCustomDate1,\n    DeviceCustomDate2Label, DeviceCustomDate2)\n| evaluate bag_unpack(packed)\n| project-rename EventVendor=DeviceVendor,\n    EventProduct=DeviceProduct,\n    EventProductVersion=DeviceVersion,\n    EventSubType=DeviceEventClassID,\n    EventMessage=Activity,\n    EventSeverity=LogSeverity,\n    EventOriginalUid=DeviceExternalID,\n    EventEndTime=ReceiptTime,\n    DstDvcHostname=DestinationHostName,\n    DstIpAddr=DestinationIP,\n    DstUserName=DestinationUserName,\n    DstPortNumber=DestinationPort,\n    DstServiceName=DestinationServiceName,\n    SrcPortNumber=SourcePort,\n    SrcIpAddr=SourceIP,\n    SrcDvcHostname=SourceHostName,\n    SrcServiceName=SourceServiceName,\n    SrcUserName=SourceUserName,\n    SrcProcessName=SourceProcessName,\n    SrcMacAddr=SourceMACAddress,\n    DvcAction=DeviceAction,\n    DvcHostname=DeviceName,\n    DvcProcessName=ProcessName,\n    FileHashSha1=FileHash,\n    UrlOriginal=RequestURL,\n    NetworkDirection=CommunicationDirection\n| extend Command = iif(DeviceCustomString3Label == \"Command\", DeviceCustomString3, \"\")\n| extend ActionResult = iif(DeviceCustomString5Label == \"ActionResult\", DeviceCustomString5, \"\")\n| extend Event_Type = iif(DeviceCustomNumber2Label == \"Event_Type\", DeviceCustomNumber2, long(null))\n| extend VirusName = iif(DeviceCustomString1Label == \"VirusName\", DeviceCustomString1, \"\")\n| extend Policy = iif(DeviceCustomString2Label == \"Policy\", DeviceCustomString2, \"\")\n| extend ProcessCommandLine = iif(DeviceCustomString4Label == \"ProcessCommandLine\", DeviceCustomString4, \"\")\n| project-away DeviceCustomNumber1Label,\n    DeviceCustomNumber1,\n    DeviceCustomNumber2Label,\n    DeviceCustomNumber2,\n    DeviceCustomString1Label,\n    DeviceCustomString1,\n    DeviceCustomString2Label,\n    DeviceCustomString2,\n    DeviceCustomString3Label,\n    DeviceCustomString3,\n    DeviceCustomString4Label,\n    DeviceCustomString4,\n    DeviceCustomString5Label,\n    DeviceCustomString5,\n    DeviceCustomString6Label,\n    DeviceCustomString6,\n    DeviceCustomDate1Label,\n    DeviceCustomDate1,\n    DeviceCustomDate2Label,\n    DeviceCustomDate2\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

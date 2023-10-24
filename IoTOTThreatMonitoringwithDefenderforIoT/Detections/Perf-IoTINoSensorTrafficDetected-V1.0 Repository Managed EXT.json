@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/208c3f5b-3ba2-49b5-9bca-c44e58cd5fd3')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/208c3f5b-3ba2-49b5-9bca-c44e58cd5fd3')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "No traffic on Sensor Detected (Microsoft Defender for IoT)",
+        "description": "'This alert leverages Defender for IoT to detect that a sensor can no longer detect the network traffic, which indicates that the system is potentially insecure.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "SecurityAlert\n| where ProviderName == \"IoTSecurity\"\n| where AlertName == \"No Traffic Detected on Sensor Interface\" \n| extend ExtendedProperties = parse_json(ExtendedProperties)\n| where tostring(ExtendedProperties.isNew) == \"True\"\n| extend DeviceId = tostring(ExtendedProperties.DeviceId), \n         SourceDeviceAddress = tostring(ExtendedProperties.SourceDeviceAddress), \n         DestDeviceAddress = tostring(ExtendedProperties.DestinationDeviceAddress), \n         RemediationSteps = tostring(parse_json(RemediationSteps)[0]), \n         Protocol = tostring(ExtendedProperties.Protocol), \n         AlertManagementUri = tostring(ExtendedProperties.AlertManagementUri)\n| project\n  TimeGenerated,\n  DeviceId,\n  ProductName,\n  ProductComponentName,\n  AlertSeverity,\n  AlertName,\n  Description,\n  Protocol,\n  SourceDeviceAddress,\n  DestDeviceAddress,\n  RemediationSteps,\n  Tactics,\n  Entities,\n  VendorOriginalId,\n  AlertLink,\n  AlertManagementUri,\n  Techniques\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InhibitResponseFunction"
+        ],
+        "techniques": [
+          "T0881"
+        ],
+        "alertRuleTemplateName": "208c3f5b-3ba2-49b5-9bca-c44e58cd5fd3",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "(MDIoT) {{AlertName}}",
+          "alertTacticsColumnName": "Tactics",
+          "alertSeverityColumnName": "AlertSeverity",
+          "alertDescriptionFormat": "(MDIoT) {{Description}}",
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "ProductName",
+              "value": "ProductName"
+            },
+            {
+              "alertProperty": "RemediationSteps",
+              "value": "RemediationSteps"
+            },
+            {
+              "alertProperty": "Techniques",
+              "value": "Techniques"
+            },
+            {
+              "alertProperty": "ProductComponentName",
+              "value": "ProductComponentName"
+            },
+            {
+              "alertProperty": "AlertLink",
+              "value": "AlertLink"
+            }
+          ]
+        },
+        "customDetails": {
+          "VendorOriginalId": "VendorOriginalId",
+          "Protocol": "Protocol",
+          "AlertManagementUri": "AlertManagementUri",
+          "Sensor": "DeviceId"
+        },
+        "entityMappings": null,
+        "sentinelEntitiesMappings": [
+          {
+            "columnName": "Entities"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

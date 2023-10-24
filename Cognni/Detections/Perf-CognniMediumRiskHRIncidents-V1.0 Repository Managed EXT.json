@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/75ff4f7d-0564-4a55-8b25-a75be951cde3')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/75ff4f7d-0564-4a55-8b25-a75be951cde3')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cognni Incidents for Medium Sensitivity HR Information",
+        "description": "'Display incidents in which medium sensitivity HR information was placed at risk by user sharing.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let mediumRisk = 2;\nlet hr = 'HR Information';\nCognniIncidents_CL \n| where Severity == mediumRisk\n| where informationType_s == hr\n| where TimeGenerated >= ago(5h)\n| extend AccountCustomEntity = userId_s\n",
+        "queryFrequency": "PT5H",
+        "queryPeriod": "PT5H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1530"
+        ],
+        "alertRuleTemplateName": "75ff4f7d-0564-4a55-8b25-a75be951cde3",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

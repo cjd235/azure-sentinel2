@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/08330c3d-487e-4f5e-a539-1e7d06dea786')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/08330c3d-487e-4f5e-a539-1e7d06dea786')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "SailPointIdentityNowAlertForTriggers",
+        "description": "'Create alerts for SailPoint IdentityNow Event Trigger Service.'\n",
+        "severity": "Informational",
+        "enabled": true,
+        "query": "declare query_parameters(lbperiod:timespan = 14d, triggerId:string = \"idn:aggregation-accounts-collected\");\n  SailPointIDN_Triggers_CL\n  | where TimeGenerated > ago(lbperiod)\n  | where Metadata_triggerId_s == triggerId\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P14D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess",
+          "Collection"
+        ],
+        "techniques": [
+          "T1133",
+          "T1005"
+        ],
+        "alertRuleTemplateName": "08330c3d-487e-4f5e-a539-1e7d06dea786",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Metadata_triggertId_s"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/6116dc19-475a-4148-84b2-efe89c073e27')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/6116dc19-475a-4148-84b2-efe89c073e27')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "New High Severity Vulnerability Detected Across Multiple Hosts",
+        "description": "'This creates an incident when a new high severity vulnerability is detected across multilple hosts'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 10;\nQualysHostDetectionV2_CL\n| extend Status = tostring(Status_s), Vulnerability = tostring(QID_s), Severity = tostring(Severity_s)\n| where Status =~ \"New\" and Severity == \"5\"\n| summarize StartTime = min(TimeGenerated), EndTime = max(TimeGenerated), dcount(NetBios_s) by tostring(QID_s)\n| where dcount_NetBios_s >= threshold\n| extend timestamp = StartTime\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "techniques": [
+          "T1190"
+        ],
+        "alertRuleTemplateName": "6116dc19-475a-4148-84b2-efe89c073e27",
+        "customDetails": null,
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

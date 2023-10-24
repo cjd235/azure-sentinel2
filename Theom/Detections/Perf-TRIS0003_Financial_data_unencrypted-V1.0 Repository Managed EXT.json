@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b568d2fb-b73c-4e6a-88db-2093457712af')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b568d2fb-b73c-4e6a-88db-2093457712af')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Theom - Financial data unencrypted",
+        "description": "\"Creates Sentinel incidents for critical/high Theom risks, associated with ruleId TRIS0003 (Financial data has been observed in unencrypted data stores. Encrypt data at rest to comply with this CIS requirement)\"\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TheomAlerts_CL\n  | where customProps_RuleId_s == \"TRIS0003\" and (priority_s == \"P1\" or priority_s == \"P2\")\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "b568d2fb-b73c-4e6a-88db-2093457712af",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDescriptionFormat": "\nSummary: {{summary_s}}  \nAdditional info: {{details_s}}\nPlease investigate further on Theom UI at {{deepLink_s}}\n",
+          "alertDisplayNameFormat": "Theom Alert ID: {{id_s}} "
+        },
+        "customDetails": null,
+        "entityMappings": null,
+        "templateVersion": "1.0.0",
+        "status": "Available"
+      }
+    }
+  ]
+}

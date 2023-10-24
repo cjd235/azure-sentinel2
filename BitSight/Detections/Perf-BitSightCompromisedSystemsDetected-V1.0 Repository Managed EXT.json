@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d68b758a-b117-4cb8-8e1d-dcab5a4a2f21')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d68b758a-b117-4cb8-8e1d-dcab5a4a2f21')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "BitSight - compromised systems detected",
+        "description": "'Rule helps to detect whenever there is a compromised systems found in BitSight.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let timeframe = 24h;\nBitSightFindingsData\n| where ingestion_time() > ago(timeframe)\n| where RiskCategory == \"Compromised Systems\"\n| extend Severity = toreal(Severity)\n| extend Severity = case( Severity <= 6.9 and Severity >= 4.0, \"Low\",\n                          Severity <= 8.9 and Severity >= 7.0, \"Medium\",\n                          Severity <= 10.0 and Severity >= 9.0, \"High\",\n                          \"Informational\")\n| project FirstSeen, CompanyName, Severity, RiskCategory, RiskVector, TemporaryId\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "PT24H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "alertRuleTemplateName": "d68b758a-b117-4cb8-8e1d-dcab5a4a2f21",
+        "incidentConfiguration": {
+          "createIncident": true
+        },
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "BitSight: Alert for {{RiskVector}} in {{CompanyName}} from BitSight",
+          "alertSeverityColumnName": "Severity",
+          "alertDescriptionFormat": "Alert is generated for {{CompanyName}}.\\n\\nRisk Vector: {{RiskVector}}\\nTemporaryId: {{TemporaryId}}\\nRisk Category: Compromised Systems"
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "RiskVector"
+              },
+              {
+                "identifier": "Category",
+                "columnName": "RiskCategory"
+              }
+            ],
+            "entityType": "Malware"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

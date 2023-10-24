@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(OneIdentity_Safeguard')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "OneIdentity_Safeguard",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "OneIdentity_Safeguard",
+        "query": "CommonSecurityLog \n| where DeviceVendor == \"OneIdentity\"\n| extend extensionData = split(AdditionalExtensions,\";\")\n| extend EventUserId = coalesce(\n                            column_ifexists(\"FieldDeviceCustomNumber1\", long(null)),\n                            DeviceCustomNumber1\n                        )\n| extend EventUserDisplayName = DeviceCustomString1\n| extend EventUserDomainName = DeviceCustomString2\n| extend AccessRequestType = DeviceCustomString3\n| extend AccountDistinguishedName = DeviceCustomString4\n| extend AccountDomainName = DeviceCustomString5\n| extend AccountId = coalesce(\n                            column_ifexists(\"FieldDeviceCustomNumber2\", long(null)),\n                            DeviceCustomNumber2\n                        )\n| extend AccountName = DeviceCustomString6\n| extend ApproverAccessRequestUri = extract(@\"(=)(\\S*)\",2,tostring(extensionData[9]))\n| extend AssetId = coalesce(\n                            column_ifexists(\"FieldDeviceCustomNumber3\", long(null)),\n                            DeviceCustomNumber3\n                        )\n| extend AssetName = extract(@\"(=)(\\S*)\",2,tostring(extensionData[12]))\n| extend AssetNetworkAddress = extract(@\"(=)(\\S*)\",2,tostring(extensionData[14]))\n| extend AssetPlatformType = extract(@\"(=)(\\S*)\",2,tostring(extensionData[16]))\n| extend Comment = extract(@\"(=)(\\S*)\",2,tostring(extensionData[18]))\n| extend DurationInMinutes = extract(@\"(=)(\\S*)\",2,tostring(extensionData[20]))\n| extend OfflineWorkflowMode = extract(@\"(=)(\\S*)\",2,tostring(extensionData[22]))\n| extend Reason =  coalesce(\n                            extract(@\"(=)(\\S*)\",2,tostring(extensionData[24])),                            \n                            column_ifexists(\"Reason\", \"\")\n                        )\n| extend ReasonCode = extract(@\"(=)(\\S*)\",2,tostring(extensionData[26]))\n| extend Requester = extract(@\"(=)(\\S*)\",2,tostring(extensionData[28]))\n| extend RequesterAccessRequestUri = extract(@\"(=)(\\S*)\",2,tostring(extensionData[30]))\n| project-away extensionData,AdditionalExtensions\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

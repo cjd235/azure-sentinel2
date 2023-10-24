@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/09b8dfc7-87b0-4215-b34b-bab363d685cb')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/09b8dfc7-87b0-4215-b34b-bab363d685cb')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Snowflake - Possible discovery activity",
+        "description": "'Detects possible discovery activity.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let threshold = 20;\nSnowflake\n| where QUERY_TYPE_s =~ 'SHOW'\n| where EXECUTION_STATUS_s =~ 'SUCCESS'\n| summarize count() by TargetUsername, bin(TimeGenerated, 5m)\n| where count_ > threshold\n| extend AccountCustomEntity = TargetUsername\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "alertRuleTemplateName": "09b8dfc7-87b0-4215-b34b-bab363d685cb",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

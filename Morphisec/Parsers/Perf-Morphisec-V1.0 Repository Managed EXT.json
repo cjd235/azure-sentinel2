@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Morphisec')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Morphisec",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Morphisec",
+        "query": "CommonSecurityLog\n| where DeviceVendor == 'Morphisec'\n| extend Start = coalesce(\n                            todatetime(extract(\"start=([^;]+)\",1,AdditionalExtensions)),                            \n                            todatetime(column_ifexists(\"StartTime\", \"\"))\n                        )                        \n, AttackedModule = extract(\"AttackedModule=([^;]+)\",1,AdditionalExtensions)\n, MorphisecVersion = extract(\"MorphisecVersion=([^;]+)\",1,AdditionalExtensions)\n, AttackName = extract(\"AttackName=([^;]+)\",1,AdditionalExtensions)\n, AttackCategory = extract(\"AttackCategory=([^;]+)\",1,AdditionalExtensions)\n, Attackdescription = extract(\"Attackdescription=([^;]+)\",1,AdditionalExtensions)\n, ProcessSignature = extract(\"ProcessSignature=([^;]+)\",1,AdditionalExtensions)\n, ParentSignature = extract(\"ParentSignature=([^;]+)\",1,AdditionalExtensions)\n, LastStackFunctionCall = extract(\"LastStackFunctionCall=([^;]+)\",1,AdditionalExtensions)\n, LastModuleLoaded = extract(\"LastModuleLoaded=([^;]+)\",1,AdditionalExtensions)\n, CommandLine = extract(\"CommandLine=([^;]+)\",1,AdditionalExtensions)\n, ParentProcessCommandLine = extract(\"ParentProcessCommandLine=([^;]+)\",1,AdditionalExtensions)\n, CodeProcessed = extract(\"CodeProcessed=([^;]+)\",1,AdditionalExtensions)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

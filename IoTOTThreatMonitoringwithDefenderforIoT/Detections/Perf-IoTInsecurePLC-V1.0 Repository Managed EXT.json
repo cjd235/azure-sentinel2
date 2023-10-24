@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f9df500a-e2a4-4104-a517-dc1d85bb654f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f9df500a-e2a4-4104-a517-dc1d85bb654f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "PLC unsecure key state (Microsoft Defender for IoT)",
+        "description": "'This alert leverages Defender for IoT to detect PLC operating mode changes indicating the PLC is potentially insecure. If the PLC is compromised, devices that interact with it may be impacted. This may affect overall system security and safety.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "SecurityAlert\n| where ProviderName == \"IoTSecurity\"\n| where AlertName has \"PLC Operating Mode Changed\"\n| extend ExtendedProperties = parse_json(ExtendedProperties)\n| where tostring(ExtendedProperties.isNew) == \"True\"\n| extend DeviceId = tostring(ExtendedProperties.DeviceId), \n         SourceDeviceAddress = tostring(ExtendedProperties.SourceDeviceAddress), \n         DestDeviceAddress = tostring(ExtendedProperties.DestinationDeviceAddress), \n         RemediationSteps = tostring(parse_json(RemediationSteps)[0]), \n         Protocol = tostring(ExtendedProperties.Protocol), \n         AlertManagementUri = tostring(ExtendedProperties.AlertManagementUri)\n| project\n  TimeGenerated,\n  DeviceId,\n  ProductName,\n  ProductComponentName,\n  AlertSeverity,\n  AlertName,\n  Description,\n  Protocol,\n  SourceDeviceAddress,\n  DestDeviceAddress,\n  RemediationSteps,\n  Tactics,\n  Entities,\n  VendorOriginalId,\n  AlertLink,\n  AlertManagementUri,\n  Techniques\n",
+        "queryFrequency": "PT3H",
+        "queryPeriod": "PT3H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution"
+        ],
+        "techniques": [
+          "T0858"
+        ],
+        "alertRuleTemplateName": "f9df500a-e2a4-4104-a517-dc1d85bb654f",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "(MDIoT) {{AlertName}}",
+          "alertTacticsColumnName": "Tactics",
+          "alertSeverityColumnName": "AlertSeverity",
+          "alertDescriptionFormat": "(MDIoT) {{Description}}",
+          "alertDynamicProperties": [
+            {
+              "alertProperty": "ProductName",
+              "value": "ProductName"
+            },
+            {
+              "alertProperty": "RemediationSteps",
+              "value": "RemediationSteps"
+            },
+            {
+              "alertProperty": "Techniques",
+              "value": "Techniques"
+            },
+            {
+              "alertProperty": "ProductComponentName",
+              "value": "ProductComponentName"
+            },
+            {
+              "alertProperty": "AlertLink",
+              "value": "AlertLink"
+            }
+          ]
+        },
+        "customDetails": {
+          "VendorOriginalId": "VendorOriginalId",
+          "Protocol": "Protocol",
+          "AlertManagementUri": "AlertManagementUri",
+          "Sensor": "DeviceId"
+        },
+        "entityMappings": null,
+        "sentinelEntitiesMappings": [
+          {
+            "columnName": "Entities"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

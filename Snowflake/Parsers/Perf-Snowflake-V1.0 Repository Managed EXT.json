@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(Snowflake')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "Snowflake",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "Snowflake",
+        "query": "Snowflake_CL\n| extend EventVendor = 'Snowflake'\n| extend EventProduct = 'Snowflake'\n| project-rename \n    EventStartTime=START_TIME_t,\n    EventType=EVENT_TYPE_s,\n    TargetUsername=USER_NAME_s,\n    SrcDvcIpAddr=CLIENT_IP_s\n| extend \n    User=TargetUsername,\n    EventEndTime=iff(isnotempty(EVENT_TIMESTAMP_t), EVENT_TIMESTAMP_t, END_TIME_t)\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

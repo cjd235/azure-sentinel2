@@ -1,0 +1,77 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/18dbdc22-b69f-4109-9e39-723d9465f45f')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/18dbdc22-b69f-4109-9e39-723d9465f45f')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Aqua Blizzard AV hits - Feb 2022",
+        "description": "'Identifies a match in the Security Alert table for MDATP hits related to the Aqua Blizzard actor'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "let iocs = externaldata(DateAdded:string,IoC:string,Type:string) [@\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Feeds/ActiniumIOC.csv\"] with (format=\"csv\", ignoreFirstRecord=True);\nlet AVHits = (iocs | where Type =~ \"AVDetection\"| project IoC);\nSecurityAlert\n| where ProviderName == 'MDATP'\n| extend ThreatName_ = tostring(parse_json(ExtendedProperties).ThreatName)\n| where ThreatName_ has_any (AVHits)\n| extend Directory = tostring(parse_json(Entities)[0].Directory), SHA256 = tostring(parse_json(tostring(parse_json(Entities)[0].FileHashes))[2].Value), FileName = tostring(parse_json(Entities)[0].Name), Hostname = tostring(parse_json(Entities)[6].FQDN)| extend AccountName = tostring(parse_json(tostring(parse_json(Entities)[6].LoggedOnUsers))[0].AccountName)\n| project TimeGenerated, AlertName, ThreatName_, ProviderName, AlertSeverity, Description, RemediationSteps, ExtendedProperties, Entities, FileName,SHA256, Directory, Hostname, AccountName\n| extend timestamp = TimeGenerated, HostCustomEntity = Hostname , AccountCustomEntity = AccountName,  FileHashCustomEntity = SHA256, FileHashType = \"SHA256\"\n",
+        "queryFrequency": "PT6H",
+        "queryPeriod": "PT6H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Persistence"
+        ],
+        "techniques": [
+          "T1137"
+        ],
+        "alertRuleTemplateName": "18dbdc22-b69f-4109-9e39-723d9465f45f",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "HostCustomEntity"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Algorithm",
+                "columnName": "FileHashType"
+              },
+              {
+                "identifier": "Value",
+                "columnName": "FileHashCustomEntity"
+              }
+            ],
+            "entityType": "FileHash"
+          }
+        ],
+        "tags": [
+          "Aqua Blizzard"
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}

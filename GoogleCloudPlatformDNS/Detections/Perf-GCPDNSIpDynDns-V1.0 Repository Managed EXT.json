@@ -1,0 +1,60 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/09fc03e0-daec-4b22-8afa-4bba30d7e909')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/09fc03e0-daec-4b22-8afa-4bba30d7e909')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Google DNS - Request to dynamic DNS service",
+        "description": "'Detects requests to ip lookup resources.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let dyndns = dynamic(['noip.com', 'dynu.com', 'dyn.com', 'dynv6.com']);\nGCPCloudDNS\n| where Query in~ (dyndns)\n| extend DNSCustomEntity = Query, IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "CommandAndControl"
+        ],
+        "techniques": [
+          "T1095"
+        ],
+        "alertRuleTemplateName": "09fc03e0-daec-4b22-8afa-4bba30d7e909",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DNSCustomEntity"
+              }
+            ],
+            "entityType": "DNS"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

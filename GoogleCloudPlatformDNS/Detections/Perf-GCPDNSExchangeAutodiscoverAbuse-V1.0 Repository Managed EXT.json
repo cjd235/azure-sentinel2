@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/424c2aca-5367-4247-917a-5d0f7035e40e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/424c2aca-5367-4247-917a-5d0f7035e40e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Google DNS - Exchange online autodiscover abuse",
+        "description": "'Detects possible Exchange online autodiscover abuse.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "GCPCloudDNS\n| where Query has_any ('autodiscover.com.br', 'autodiscover.com.cn', 'autodiscover.com.co', 'autodiscover.es', 'autodiscover.fr', 'autodiscover.in', 'autodiscover.it', 'autodiscover.sg', 'autodiscover.uk', 'autodiscover.xyz', 'autodiscover.online')\n| extend DNSCustomEntity = Query, IPCustomEntity = SrcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess",
+          "CredentialAccess"
+        ],
+        "techniques": [
+          "T1566",
+          "T1187"
+        ],
+        "alertRuleTemplateName": "424c2aca-5367-4247-917a-5d0f7035e40e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "DomainName",
+                "columnName": "DNSCustomEntity"
+              }
+            ],
+            "entityType": "DNS"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

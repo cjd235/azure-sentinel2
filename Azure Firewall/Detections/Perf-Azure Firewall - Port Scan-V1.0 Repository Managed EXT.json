@@ -1,0 +1,61 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/b2c5907b-1040-4692-9802-9946031017e8')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/b2c5907b-1040-4692-9802-9946031017e8')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Port Scan",
+        "description": "'Identifies a source IP scanning multiple open ports on Azure Firewall. This can indicate malicious scanning of ports by an attacker, trying to reveal open ports in the organization that can be compromised for initial access.\n\nConfigurable Parameters:\n\n- Port scan time - the time range to look for multiple ports scanned. Default is set to 30 seconds.\n- Minimum different ports threshold - alert only if more than this number of ports scanned. Default is set to 100.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let MinimumDifferentPortsThreshold = 100;\nlet BinTime = 30s;\nunion isfuzzy=true(\nAZFWApplicationRule\n| summarize AlertTimedCountPortsInBinTime = dcount(DestinationPort) by SourceIp, bin(TimeGenerated, BinTime), Fqdn\n| where AlertTimedCountPortsInBinTime > MinimumDifferentPortsThreshold),\n(AZFWNetworkRule\n| extend Fqdn = DestinationIp\n| summarize AlertTimedCountPortsInBinTime = dcount(DestinationPort) by SourceIp, bin(TimeGenerated, BinTime), Fqdn\n| where AlertTimedCountPortsInBinTime > MinimumDifferentPortsThreshold),\n(AzureDiagnostics\n| where OperationName == \"AzureFirewallApplicationRuleLog\" or OperationName == \"AzureFirewallNetworkRuleLog\"\n| parse msg_s with * \"from \" SourceIp \":\" SourcePort:int \" to \" Fqdn \":\" DestinationPort:int\n| where isnotempty(Fqdn) and isnotempty(SourceIp)\n| summarize AlertTimedCountPortsInBinTime = dcount(DestinationPort) by SourceIp, bin(TimeGenerated, BinTime), Fqdn\n| where AlertTimedCountPortsInBinTime > MinimumDifferentPortsThreshold)\n",
+        "queryFrequency": "P1D",
+        "queryPeriod": "P1D",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 1,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Discovery"
+        ],
+        "techniques": [
+          "T1046"
+        ],
+        "alertRuleTemplateName": "b2c5907b-1040-4692-9802-9946031017e8",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "SourceIp"
+              }
+            ],
+            "entityType": "IP"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Url",
+                "columnName": "Fqdn"
+              }
+            ],
+            "entityType": "URL"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.1.1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/37a8d052-a3db-4dc6-9dca-9390cac6f486')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/37a8d052-a3db-4dc6-9dca-9390cac6f486')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Sonrai Ticket Assigned",
+        "description": "'Checks if Sonrai tickets have been assigned. \nIt uses the action type to check if a ticket has been assigned'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "Sonrai_Tickets_CL\n| where action_d == 4\n",
+        "queryFrequency": "PT5M",
+        "queryPeriod": "PT5M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "alertRuleTemplateName": "37a8d052-a3db-4dc6-9dca-9390cac6f486",
+        "eventGroupingSettings": {
+          "aggregationKind": "AlertPerResult"
+        },
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "Assigned - {{digest_ticketSrn_s}} - {{digest_ticketKeyName_s}}",
+          "alertSeverityColumnName": "digest_severityCategory_s",
+          "alertDescriptionFormat": "digest_ticketKeyDescription_s"
+        },
+        "customDetails": {
+          "ticketOrg": "digest_org_s",
+          "ticketName": "digest_title_s",
+          "ticketSeverity": "digest_severityCategory_s",
+          "assignedTo": "digest_assignedTo_s",
+          "ticketStatus": "digest_status_s",
+          "criticalResource": "digest_criticalResourceName_s",
+          "resourceType": "digest_resourceType_s",
+          "resourceLabel": "digest_resourceLabel_s"
+        },
+        "entityMappings": null,
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

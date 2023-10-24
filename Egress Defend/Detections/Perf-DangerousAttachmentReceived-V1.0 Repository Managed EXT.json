@@ -1,0 +1,93 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a0e55dd4-8454-4396-91e6-f28fec3d2cab')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a0e55dd4-8454-4396-91e6-f28fec3d2cab')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Egress Defend - Dangerous Attachment Detected",
+        "description": "'Defend has detected a user has a suspicious file type from a suspicious sender in their mailbox.'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "DefendAuditData\n| where ThreatLevel == \"suspicious\" or ThreatLevel == \"dangerous\"\n| mv-expand todynamic(Attachments)\n| where Attachments.name matches regex @\"(?i)^.*\\.(doc|docx|docm|pdf|xls|xlsx|xlsm|html|zip)$(?-i)\"\n| summarize attachmentCount=count() by TimeGenerated, tostring(Attachments.name), Subject, From, Account_0_FullName = trim(@\"[^@.\\w]+\",Recipients), timesClicked = LinksClicked, SenderIP\n",
+        "queryFrequency": "PT30M",
+        "queryPeriod": "PT30M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Execution",
+          "InitialAccess",
+          "Persistence",
+          "PrivilegeEscalation"
+        ],
+        "techniques": [
+          "T1204",
+          "T0853",
+          "T0863",
+          "T1566",
+          "T1546",
+          "T1546"
+        ],
+        "alertRuleTemplateName": "a0e55dd4-8454-4396-91e6-f28fec3d2cab",
+        "alertDetailsOverride": {
+          "alertDisplayNameFormat": "Alert - {{Account_0_FullName}} has suspicious attachment."
+        },
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "Account_0_FullName"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "Attachments_name"
+              }
+            ],
+            "entityType": "File"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "MailboxPrimaryAddress",
+                "columnName": "Account_0_FullName"
+              }
+            ],
+            "entityType": "Mailbox"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "SenderIP"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "templateVersion": "1.0.0",
+        "tags": [
+          "Defend"
+        ],
+        "status": "Available"
+      }
+    }
+  ]
+}

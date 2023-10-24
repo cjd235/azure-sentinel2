@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/de58ee9e-b229-4252-8537-41a4c2f4045e')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/de58ee9e-b229-4252-8537-41a4c2f4045e')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cisco Umbrella - Request to blocklisted file type",
+        "description": "'Detects request to potentially harmful file types (.ps1, .bat, .vbs, etc.).'\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let file_ext_blocklist = dynamic(['.ps1', '.vbs', '.bat', '.scr']);\nlet lbtime = 10m;\nCisco_Umbrella\n| where TimeGenerated > ago(lbtime)\n| where EventType == 'proxylogs'\n| where DvcAction =~ 'Allowed'\n| extend file_ext = extract(@'.*(\\.\\w+)$', 1, UrlOriginal)\n| extend Filename = extract(@'.*\\/*\\/(.*\\.\\w+)$', 1, UrlOriginal)\n| where file_ext in (file_ext_blocklist)\n| project TimeGenerated, SrcIpAddr, Identities, Filename\n| extend IPCustomEntity = SrcIpAddr\n| extend AccountCustomEntity = Identities\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "InitialAccess"
+        ],
+        "alertRuleTemplateName": "de58ee9e-b229-4252-8537-41a4c2f4045e",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/savedSearches",
+      "apiVersion": "2020-08-01",
+      "name": "[concat(parameters('workspace'), '/(LookoutCSViolations')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "eTag": "*",
+        "displayName": "LookoutCSViolations",
+        "category": "Microsoft Sentinel Parser",
+        "FunctionAlias": "LookoutCSViolations",
+        "query": "LookoutCloudSecurity_CL\n| extend timeStamp = timeStamp_t\n| extend eventType = eventType_s\n| extend actionType = actionType_s\n| extend activityType = activityType_s\n| extend appName = appName_s\n| extend cloudType = column_ifexists('cloudType_s','')\n| extend contentName = column_ifexists('contentName_s','')\n| extend contentUrl = column_ifexists('contentUrl_s', '')\n| extend eventId = eventId_g\n| extend externalCollaborators = column_ifexists('externalCollaborators_s', '')\n| extend policyName = column_ifexists('policyName_s','')\n| extend scanType = column_ifexists('scanType_s', '')\n| extend userEmail = column_ifexists('userEmail_s','')\n| extend violation = column_ifexists('violation_s','')\n| where eventType == 'Violation'\n| project timeStamp,\n    eventType, \n    actionType,\n    activityType, \n    appName,\n    cloudType,\n    contentName,\n    contentUrl, \n    eventId,\n    externalCollaborators, \n    policyName,\n    scanType,\n    userEmail, \n    violation\n",
+        "version": 1,
+        "tags": []
+      }
+    }
+  ]
+}

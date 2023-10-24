@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/d2e40c79-fe8c-428e-8cb9-0e2282d4558c')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/d2e40c79-fe8c-428e-8cb9-0e2282d4558c')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Cognni Incidents for Low Sensitivity Governance Information",
+        "description": "'Display incidents in which low sensitivity governance information] was placed at risk by user sharing.'\n",
+        "severity": "Low",
+        "enabled": true,
+        "query": "let lowRisk = 1;\nlet governance = 'Governance Information';\nCognniIncidents_CL \n| where Severity == lowRisk\n| where informationType_s == governance\n| where TimeGenerated >= ago(5h)\n| extend AccountCustomEntity = userId_s\n",
+        "queryFrequency": "PT5H",
+        "queryPeriod": "PT5H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "Collection"
+        ],
+        "techniques": [
+          "T1530"
+        ],
+        "alertRuleTemplateName": "d2e40c79-fe8c-428e-8cb9-0e2282d4558c",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

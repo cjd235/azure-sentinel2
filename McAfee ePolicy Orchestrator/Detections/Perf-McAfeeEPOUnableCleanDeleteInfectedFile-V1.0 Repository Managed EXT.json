@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9860e89f-72c8-425e-bac9-4a170798d3ea')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9860e89f-72c8-425e-bac9-4a170798d3ea')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "McAfee ePO - Unable to clean or delete infected file",
+        "description": "'Detects when McAfee failed to clean or delete infected file.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "McAfeeEPOEvent\n| where EventId in ('1026', '1028', '1298', '1310', '1055', '2002', '2004', '2009')\n| extend EventMessage = case(EventId == '1026', 'Unable to clean infected file',\n                              EventId == '1028', 'Unable to delete infected file',\n                              EventId == '1298', 'File infected. Delete failed, quarantine failed',\n                              EventId == '1310', 'Multiple extension heuristic detection - delete failed, quarantine failed',\n                              EventId == '1055', 'Unable to delete infected file',\n                              EventId == '2002', 'Unable to clean infected file',\n                              EventId == '2004', 'Unable to delete infected file',\n                              'Unable to move infected file to quarantine')\n| project DvcIpAddr, EventId, EventMessage, DstFileName\n| extend IPCustomEntity = DvcIpAddr\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562",
+          "T1070"
+        ],
+        "alertRuleTemplateName": "9860e89f-72c8-425e-bac9-4a170798d3ea",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Address",
+                "columnName": "IPCustomEntity"
+              }
+            ],
+            "entityType": "IP"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

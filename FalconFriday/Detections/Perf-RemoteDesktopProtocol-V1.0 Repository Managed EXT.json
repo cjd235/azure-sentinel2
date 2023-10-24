@@ -1,0 +1,78 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/cc46e76c-0d04-40b0-9c8b-929aa40513e7')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/cc46e76c-0d04-40b0-9c8b-929aa40513e7')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Remote Desktop Protocol - SharpRDP",
+        "description": "This detection monitors for the behavior that SharpRDP exhibits on the target system. The most relevant is leveraging taskmgr.exe to gain elevated execution, which means that taskmgr.exe is creating unexpected child processes.\n",
+        "severity": "Medium",
+        "enabled": true,
+        "query": "let executions = DeviceProcessEvents\n| where InitiatingProcessFileName contains \"taskmgr\" and AccountName !contains \"_ladm\" // Include your LAPS /RID500 admin naming convention here. \n// Add the below filter to look for stock SharpRDP behavior. However, with minorchanges to the stock version of SharpRDP the filter below can be bypassed.\n//| where not(InitiatingProcessCommandLine has_any (\"/1\",\"/2\",\"/3\",\"/4\"))\n| where not(FolderPath =~ @\"c:\\Windows\\system32\\WerFault.exe\" and ProcessCommandLine contains \"-u -p\")\n| where not(FolderPath =~ @\"c:\\windows\\system32\\mmc.exe\" and ProcessCommandLine contains @\"C:\\WINDOWS\\System32\\services.msc\")\n| where not(FolderPath =~ @\"c:\\windows\\system32\\resmon.exe\");\nexecutions\n| join kind=leftsemi  (DeviceLogonEvents\n| where LogonType in ('Unlock', 'RemoteInteractive') and not (LogonType == 'Unlock' and RemoteIP == '127.0.0.1') and RemoteIP != \"\" and ActionType == \"LogonSuccess\") on DeviceId, LogonId\n",
+        "queryFrequency": "PT1H",
+        "queryPeriod": "PT1H",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "LateralMovement"
+        ],
+        "techniques": [
+          "T1021.001"
+        ],
+        "alertRuleTemplateName": "cc46e76c-0d04-40b0-9c8b-929aa40513e7",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "FullName",
+                "columnName": "DeviceName"
+              }
+            ],
+            "entityType": "Host"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Sid",
+                "columnName": "AccountSid"
+              },
+              {
+                "identifier": "Name",
+                "columnName": "AccountName"
+              },
+              {
+                "identifier": "NTDomain",
+                "columnName": "AccountDomain"
+              }
+            ],
+            "entityType": "Account"
+          },
+          {
+            "fieldMappings": [
+              {
+                "identifier": "CommandLine",
+                "columnName": "ProcessCommandLine"
+              }
+            ],
+            "entityType": "Process"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.0"
+      }
+    }
+  ]
+}

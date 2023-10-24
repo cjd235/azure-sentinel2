@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspace": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/c8e2ad52-bd5f-4f74-a2f7-6c3ab8ba687a')]",
+      "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/c8e2ad52-bd5f-4f74-a2f7-6c3ab8ba687a')]",
+      "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+      "kind": "Scheduled",
+      "apiVersion": "2022-11-01-preview",
+      "properties": {
+        "displayName": "Trend Micro CAS - Threat detected and not blocked",
+        "description": "'Detects when threat was not blocked by CAS solution.'\n",
+        "severity": "High",
+        "enabled": true,
+        "query": "TrendMicroCAS\n| where isnotempty(SecurityRiskName)\n| where EventOriginalResultDetails !has 'Blocked' or EventOriginalResultDetails !has 'Block' or EventOriginalResultDetails !has 'Quarantine' or TriggeredPolicyName has 'Monitor Only'\n| extend AccountCustomEntity = DstUserName\n",
+        "queryFrequency": "PT10M",
+        "queryPeriod": "PT10M",
+        "triggerOperator": "GreaterThan",
+        "triggerThreshold": 0,
+        "suppressionDuration": "PT1H",
+        "suppressionEnabled": false,
+        "tactics": [
+          "DefenseEvasion"
+        ],
+        "techniques": [
+          "T1562"
+        ],
+        "alertRuleTemplateName": "c8e2ad52-bd5f-4f74-a2f7-6c3ab8ba687a",
+        "customDetails": null,
+        "entityMappings": [
+          {
+            "fieldMappings": [
+              {
+                "identifier": "Name",
+                "columnName": "AccountCustomEntity"
+              }
+            ],
+            "entityType": "Account"
+          }
+        ],
+        "status": "Available",
+        "templateVersion": "1.0.1"
+      }
+    }
+  ]
+}
